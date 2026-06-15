@@ -1,3 +1,6 @@
+/* Helvetica Now Var — scoped to AutomationHero (.font-helvetica-now), not global. */
+@import url('https://db.onlinewebfonts.com/c/e66905e07608167a84e6ad52f638c3c6?family=Helvetica+Now+Var');
+
 /* Mazzard H — registered for the PrecisionSection only (scoped via .font-mazzard,
    NOT applied globally, so the design.md SF Pro/Inter system stays intact). */
 @font-face {
@@ -28,6 +31,12 @@
   .font-mazzard,
   .font-mazzard * {
     font-family: 'Mazzard H', system-ui, sans-serif;
+  }
+
+  /* Scoped opt-in for the AutomationHero (over the fixed video). */
+  .font-helvetica-now,
+  .font-helvetica-now * {
+    font-family: 'Helvetica Now Var', 'Helvetica Neue', Helvetica, Arial, sans-serif;
   }
 }
 

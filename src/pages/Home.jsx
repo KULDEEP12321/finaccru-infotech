@@ -3,6 +3,7 @@ import { CTASection, StatRow } from '../components/blocks.jsx'
 import { Reveal } from '../components/Reveal.jsx'
 import FHero from '../components/FHero.jsx'
 import WorkGrid from '../components/WorkGrid.jsx'
+import AutomationHero from '../components/AutomationHero.jsx'
 import ServicesList from '../components/ServicesList.jsx'
 import Marquee from '../components/Marquee.jsx'
 import FreedomSection from '../components/FreedomSection.jsx'
@@ -50,6 +51,9 @@ export default function Home() {
           <Marquee />
         </Container>
       </section>
+
+      {/* ── Full-viewport statement over a fixed background video ─── */}
+      <AutomationHero />
 
       {/* ── Services grid (light) ─────────────────────────────── */}
       <Section surface="light">

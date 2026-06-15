@@ -32,9 +32,11 @@ const CX = 450 // grow about the stem MIDLINE (symmetric → no drift)
 const CY = 500
 const STEM_HALF = 50 // stem half-width in viewBox units (drives the engulf scale)
 
-const prefersReduced = () =>
-  typeof window !== 'undefined' &&
-  !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+// Per-frame smoothing for the scrub. The displayed progress eases toward the
+// scroll-derived target instead of snapping to it, so the dive glides — buttery
+// on smooth wheel, and crucially un-janky on coarse/touch scroll (where Lenis
+// doesn't smooth). The dive runs on EVERY device (reduced-motion included).
+const SMOOTH = 0.16
 
 export default function FHero() {
   const trackRef = useRef(null)
@@ -44,24 +46,15 @@ export default function FHero() {
   const montageRef = useRef(null) // montage layer (settle + brighten)
   const copyRef = useRef(null) // hero copy + scroll hint (fades out first)
   const divedRef = useRef(false) // latch: have we engulfed past the reveal point?
+  const pSmoothRef = useRef(0) // eased scrub progress (lags the raw scroll target)
+  const firstRef = useRef(true) // snap (don't ease) on the very first frame
 
-  // Initialise synchronously so the first render is already correct (no flash).
-  const [reduced, setReduced] = useState(prefersReduced)
   // Flips true once the F has engulfed enough to "land" inside AriaHero — drives
   // its typewriter + pill reveal so they fire on arrival, not on page load.
   const [dived, setDived] = useState(false)
 
-  useEffect(() => {
-    const mq = window.matchMedia?.('(prefers-reduced-motion: reduce)')
-    if (!mq) return
-    const apply = () => setReduced(mq.matches)
-    mq.addEventListener?.('change', apply)
-    return () => mq.removeEventListener?.('change', apply)
-  }, [])
-
   // ── Single rAF loop, Lenis-synced via getBoundingClientRect (not scroll events) ─
   useEffect(() => {
-    if (reduced) return
     let raf = 0
 
     // parchment #f5f5f7 → dark tile #272729 (== WorkMontage bg, so slivers vanish)
@@ -77,7 +70,16 @@ export default function FHero() {
         // Offscreen early-out: skip all layout writes when the hero isn't visible.
         if (r.bottom > 0 && r.top < window.innerHeight) {
           const denom = r.height - window.innerHeight
-          const p = denom > 0 ? clamp(-r.top / denom, 0, 1) : 0
+          const pTarget = denom > 0 ? clamp(-r.top / denom, 0, 1) : 0
+          // Ease the displayed progress toward the scroll target (snap on frame 1)
+          // so the dive glides instead of snapping — smooth even on touch scroll.
+          if (firstRef.current) {
+            pSmoothRef.current = pTarget
+            firstRef.current = false
+          } else {
+            pSmoothRef.current += (pTarget - pSmoothRef.current) * SMOOTH
+          }
+          const p = pSmoothRef.current
           const sp = clamp(p / 0.85, 0, 1) // finish the meaningful growth by p=0.85
           const e = ease(sp)
 
@@ -132,7 +134,7 @@ export default function FHero() {
     }
     raf = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(raf)
-  }, [reduced])
+  }, [])
 
   // ── F window SVG (shared by both branches) ─────────────────────────────────────
   const windowSvg = (
@@ -189,21 +191,6 @@ export default function FHero() {
       <span className="block h-9 w-[1.5px] animate-pulse bg-ink-muted48/60" />
     </div>
   )
-
-  // ── Reduced-motion: short, static, fully readable (no track, no rAF) ────────────
-  if (reduced) {
-    return (
-      <section className="relative bg-parchment">
-        <div className="relative h-screen overflow-hidden">
-          <div className="absolute inset-0">
-            <AriaHero active />
-          </div>
-          {windowSvg}
-          <div className="absolute inset-0">{copyBlock}</div>
-        </div>
-      </section>
-    )
-  }
 
   return (
     // Tall scroll-track; the stage inside is sticky for the scrubbed aperture dive.

@@ -42,8 +42,10 @@ export default function App() {
     }
   }, [])
 
+  // No solid bg on this wrapper: the body keeps bg-canvas, and dropping it here
+  // lets AutomationHero's fixed z-index:-1 video show through that one section.
   return (
-    <div className="flex min-h-screen flex-col bg-canvas">
+    <div className="flex min-h-screen flex-col">
       <ScrollToTop lenisRef={lenisRef} />
       <Navbar />
       <main className="flex-1">

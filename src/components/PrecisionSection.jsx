@@ -8,7 +8,15 @@
 
 const LOGO_ICON = '/favicon.svg' // our own mark, replacing the EternaCloud icon
 
-const LINE_GRADIENT = 'linear-gradient(#0066cc, rgba(0,102,204,0))'
+// The flowing wave graphic that rises left→right behind the staircase — the
+// section's signature "waves". Stored locally so it always loads (the original
+// spec pointed at a remote proxy URL).
+const WAVE_BG = '/img/precision-waves.webp'
+
+// The "waves" — a vivid multi-stop gradient that flows down each pillar's line.
+// (Previously a single blue→transparent fade, which read as near-invisible.)
+const LINE_GRADIENT =
+  'linear-gradient(rgb(28, 78, 255), rgb(254, 136, 27) 0%, rgb(172, 36, 255) 25%, rgb(247, 159, 255) 50%, rgb(255, 214, 0) 66%, rgb(254, 136, 27) 84%, rgba(254, 136, 27, 0) 102%)'
 
 const PILLARS = [
   { label: 'Discover', items: ['needs', 'pain points', 'requirements', 'scope'], leftVw: 2.8, bottomVw: 7 },
@@ -39,6 +47,10 @@ export default function PrecisionSection() {
     <section
       style={{
         backgroundColor: '#ffffff',
+        backgroundImage: `url(${WAVE_BG})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center bottom',
+        backgroundRepeat: 'no-repeat',
         width: '100%',
         display: 'flex',
         flexDirection: 'column',
