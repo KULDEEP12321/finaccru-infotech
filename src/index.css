@@ -1,0 +1,123 @@
+/* Mazzard H — registered for the PrecisionSection only (scoped via .font-mazzard,
+   NOT applied globally, so the design.md SF Pro/Inter system stays intact). */
+@font-face {
+  font-family: 'Mazzard H';
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+  src: url('https://db.onlinewebfonts.com/t/eb5b5ee332420add9a40ee988cb6ac37.woff2') format('woff2'),
+    url('https://db.onlinewebfonts.com/t/eb5b5ee332420add9a40ee988cb6ac37.woff') format('woff'),
+    url('https://db.onlinewebfonts.com/t/eb5b5ee332420add9a40ee988cb6ac37.ttf') format('truetype');
+}
+@font-face {
+  font-family: 'Mazzard H';
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+  src: url('https://db.onlinewebfonts.com/t/875fffdfa62169a0f131e90f37f1faf4.woff2') format('woff2'),
+    url('https://db.onlinewebfonts.com/t/875fffdfa62169a0f131e90f37f1faf4.woff') format('woff'),
+    url('https://db.onlinewebfonts.com/t/875fffdfa62169a0f131e90f37f1faf4.ttf') format('truetype');
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* Scoped opt-in for the PrecisionSection blend. */
+  .font-mazzard,
+  .font-mazzard * {
+    font-family: 'Mazzard H', system-ui, sans-serif;
+  }
+}
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-canvas font-text text-body-lg text-ink antialiased;
+  }
+
+  /* Inter needs a hair tighter tracking + the ss03 alt to feel like SF Pro (per design.md). */
+  body {
+    font-feature-settings: 'ss03' 1, 'cv11' 1;
+  }
+
+  ::selection {
+    background: rgba(0, 102, 204, 0.18);
+  }
+
+  /* Apple keyboard-focus signal: 2px solid Focus Blue, never on mouse click. */
+  :focus-visible {
+    outline: 2px solid #0071e3;
+    outline-offset: 2px;
+  }
+}
+
+@layer components {
+  /* The system-wide press micro-interaction. */
+  .press {
+    @apply transition-transform duration-200 ease-apple active:scale-[0.96];
+  }
+
+  /* Podium-style editorial headline: geometric Jost, UPPERCASE, tight tracking,
+     tight leading. The signature "clean + premium" voice. */
+  .display-caps {
+    @apply font-display font-semibold uppercase;
+    letter-spacing: -0.02em;
+    line-height: 0.96;
+  }
+
+  /* Small uppercase label/eyebrow (nav, captions, kickers). */
+  .label-caps {
+    @apply font-display font-medium uppercase;
+    letter-spacing: 0.02em;
+  }
+
+  /* Edge-faded track for the logo marquee (design.md: chrome recedes). */
+  .marquee-mask {
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent,
+      #000 12%,
+      #000 88%,
+      transparent
+    );
+    mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
+  }
+}
+
+@layer utilities {
+  /* Pure-CSS infinite scroller; the track is rendered twice, so -50% loops seamlessly. */
+  @keyframes marquee-x {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  .animate-marquee {
+    animation: marquee-x 36s linear infinite;
+  }
+
+  .marquee-pause:hover .animate-marquee {
+    animation-play-state: paused;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-marquee {
+      animation: none;
+    }
+  }
+}
