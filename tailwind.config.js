@@ -2,7 +2,7 @@
 // Design tokens map 1:1 to design.md (Apple-design-analysis).
 // Edit tokens here, not inline hex, per the design.md Iteration Guide.
 export default {
-  content: ['./index.html', './src/**/*.{js,jsx}'],
+  content: ['./index.html', './src/**/*.{js,jsx,ts,tsx}'],
   theme: {
     // The single accent + the surface ladder. No second brand color exists.
     extend: {

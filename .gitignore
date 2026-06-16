@@ -14,3 +14,12 @@ npm-debug.log*
 podium-enter.webm
 podium-effect-reference.webm
 workgrid-effect-ours.webm
+
+# generated / framework artifacts
+src/routeTree.gen.ts
+.wrangler
+.tanstack
+worker-configuration.d.ts
+
+# reference codebase (third-party, not part of this project)
+clone/

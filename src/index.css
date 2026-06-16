@@ -22,9 +22,12 @@
     url('https://db.onlinewebfonts.com/t/875fffdfa62169a0f131e90f37f1faf4.ttf') format('truetype');
 }
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+/* Keep the v3-style design-token config (colors, type ladder, spacing, ease-apple,
+   etc.) as the single source of truth — loaded via Tailwind v4's legacy @config so
+   the visual output stays identical to the pre-v4 build. */
+@config '../tailwind.config.js';
 
 @layer base {
   /* Scoped opt-in for the PrecisionSection blend. */
@@ -105,6 +108,18 @@
       transparent
     );
     mask-image: linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
+  }
+}
+
+/* PrecisionSection wave — on narrow screens `background-size: cover` (set inline
+   for desktop) over-scales the 1280×714 wave to the full section height, so it
+   bleeds up through the timeline text. Below sm we anchor it as a bottom band
+   instead. `!important` is required to beat the inline declaration; the desktop
+   `cover` is left fully intact since this rule never applies at ≥640px. */
+@media (max-width: 639.98px) {
+  .precision-section {
+    background-size: 150% auto !important;
+    background-position: center bottom !important;
   }
 }
 
