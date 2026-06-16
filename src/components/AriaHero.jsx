@@ -24,7 +24,16 @@ const OBJ_X = 0.7 // object-position 70% (horizontal): hide 70% of overflow on t
 const OBJ_Y = 0.5 // object-position center (vertical)
 const EASE_K = 24 // dt-based ease constant; higher = snappier (tighter cursor coupling)
 const SETTLE = 0.004 // frame-units; snap + suspend the rAF below this
-const DPR_CAP = 2 // 1600px source is the ceiling; >2x backing store buys nothing
+// Per-frame canvas cost ≈ backing-store pixel count × smoothing quality. Desktop
+// affords the full 2× / 'high'; phones — especially low-end ones — get a smaller
+// backing store + cheaper smoothing so the scrub holds the display's frame rate
+// instead of stuttering. The 1600px source keeps it crisp even at 1.2×.
+const DPR_CAP_FINE = 2
+const DPR_CAP_TOUCH = 1.5
+const DPR_CAP_LOW = 1.2
+const lowEndDevice = () =>
+  typeof navigator !== 'undefined' &&
+  (((navigator.hardwareConcurrency || 8) <= 4) || ((navigator.deviceMemory || 8) <= 4))
 const POSTER_URL = '/finn/frame-018.webp'
 const frameURL = (i) => `/finn/frame-${String(i + 1).padStart(3, '0')}.webp`
 
@@ -32,6 +41,8 @@ const frameURL = (i) => `/finn/frame-${String(i + 1).padStart(3, '0')}.webp`
 // move, and a comfortable phone tilt (gamma°) should cover the whole look range.
 const TOUCH_SENSITIVITY = 2.4
 const TILT_RANGE = 34 // ± degrees of left/right tilt mapped across the full sequence
+const TILT_SMOOTH = 0.3 // low-pass on the noisy gyro signal (lower = smoother, more lag)
+const TILT_DEADZONE = 0.6 // frame-units; a smaller tilt change is ignored so a still hand settles
 
 // How the scene is driven, by input capability (re-evaluated live in E0):
 //   'fine'  → precise hovering pointer (mouse): scrub follows the cursor; eager preload.
@@ -108,7 +119,7 @@ export default function AriaHero({ active = true }) {
   const visibleRef = useRef(true)
   const readyRef = useRef(false)
   // The entire scrub hot-path lives in refs → no re-render at pointer rate.
-  const s = useRef({ current: PARK, target: PARK, prevX: null, lastDrawn: -1, dirty: true, lastT: 0, touching: false })
+  const s = useRef({ current: PARK, target: PARK, prevX: null, lastDrawn: -1, dirty: true, lastT: 0, touching: false, tilt: null })
 
   // ── E0 — capability listeners: plugging in a mouse / toggling reduced-motion re-picks the mode.
   useEffect(() => {
@@ -139,15 +150,24 @@ export default function AriaHero({ active = true }) {
     st.dirty = true
     st.lastT = 0
     st.touching = false
+    st.tilt = null
     loadedRef.current = new Uint8Array(FRAME_COUNT)
     imagesRef.current = new Array(FRAME_COUNT).fill(null)
+
+    // Per-capability quality knobs. Touch (esp. low-end) trades a little crispness
+    // for a steady frame rate; low-end also preloads/draws every 2nd frame, halving
+    // the decode footprint and the blits per sweep.
+    const lowEnd = lowEndDevice()
+    const dprCap = mode === 'touch' ? (lowEnd ? DPR_CAP_LOW : DPR_CAP_TOUCH) : DPR_CAP_FINE
+    const smoothQ = mode === 'fine' ? 'high' : lowEnd ? 'low' : 'medium'
+    const frameStride = lowEnd ? 2 : 1
 
     const getCtx = () => {
       if (ctxRef.current) return ctxRef.current
       const ctx = canvas.getContext('2d', { alpha: false })
       if (ctx) {
         ctx.imageSmoothingEnabled = true
-        ctx.imageSmoothingQuality = 'high'
+        ctx.imageSmoothingQuality = smoothQ
       }
       ctxRef.current = ctx
       return ctx
@@ -161,7 +181,7 @@ export default function AriaHero({ active = true }) {
       const cw = canvas.clientWidth
       const ch = canvas.clientHeight
       if (!cw || !ch) return
-      const dpr = (dprRef.current = Math.min(window.devicePixelRatio || 1, DPR_CAP))
+      const dpr = (dprRef.current = Math.min(window.devicePixelRatio || 1, dprCap))
       const bw = Math.max(1, Math.round(cw * dpr))
       const bh = Math.max(1, Math.round(ch * dpr))
       if (canvas.width !== bw || canvas.height !== bh) {
@@ -170,7 +190,7 @@ export default function AriaHero({ active = true }) {
         const ctx = getCtx()
         if (ctx) {
           ctx.imageSmoothingEnabled = true
-          ctx.imageSmoothingQuality = 'high'
+          ctx.imageSmoothingQuality = smoothQ
         }
         st.dirty = true
         requestTick()
@@ -306,18 +326,28 @@ export default function AriaHero({ active = true }) {
       if (!visibleRef.current || st.touching) return
       const g = e.gamma
       if (g == null) return
-      const norm = clamp(g / TILT_RANGE, -1, 1)
-      st.target = (FRAME_COUNT - 1) * (0.5 + norm * 0.5)
+      // Low-pass the noisy sensor (EMA) so motion glides; the sub-frame deadzone lets
+      // a steady hand settle the rAF instead of churning a redraw on every jittery
+      // sample — the single biggest "smoothness" win on low-end devices.
+      st.tilt = st.tilt == null ? g : st.tilt + (g - st.tilt) * TILT_SMOOTH
+      const norm = clamp(st.tilt / TILT_RANGE, -1, 1)
+      const target = (FRAME_COUNT - 1) * (0.5 + norm * 0.5)
+      if (Math.abs(target - st.target) < TILT_DEADZONE) return
+      st.target = target
       requestTick()
     }
 
-    // Preload ALL frames upfront in priority order (PARK first, spiralling out) so
-    // teardown can abort every one symmetrically — no deferred-creation race.
+    // Preload frames upfront in priority order (PARK first, spiralling out) so
+    // teardown can abort every one symmetrically — no deferred-creation race. Low-end
+    // keeps only every 2nd frame (+ PARK): half the decode footprint, and the scrub
+    // naturally draws the loaded frames via nearestLoaded (≈ half the blits / sweep).
     const order = [PARK]
     for (let r = 1; r < FRAME_COUNT; r++) {
       if (PARK - r >= 0) order.push(PARK - r)
       if (PARK + r < FRAME_COUNT) order.push(PARK + r)
     }
+    const loadOrder =
+      frameStride > 1 ? order.filter((i) => i === PARK || i % frameStride === 0) : order
     const settle = (i, img) => {
       if (cancelled || loadedRef.current[i] || !img.naturalWidth) return
       loadedRef.current[i] = 1
@@ -329,7 +359,7 @@ export default function AriaHero({ active = true }) {
       }
       requestTick()
     }
-    for (const i of order) {
+    for (const i of loadOrder) {
       const img = new Image()
       img.decoding = 'async'
       imagesRef.current[i] = img

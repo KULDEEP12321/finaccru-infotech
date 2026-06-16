@@ -49,6 +49,25 @@ function CheckIcon() {
   )
 }
 
+// Down-arrow that links a problem card to its matching solution on mobile,
+// signalling the "before → after" transformation. Mobile-only (the desktop
+// layout flanks the orb with two columns and has no per-pair connector).
+function PairArrow() {
+  return (
+    <div aria-hidden="true" className="flex justify-center" style={{ padding: '2px 0' }}>
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+        <path
+          d="M12 5v13M6 12l6 6 6-6"
+          stroke="#0066cc"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </div>
+  )
+}
+
 const CARD_STYLE = {
   gap: '12px',
   padding: 'clamp(12px, 0.97vw, 16px) clamp(14px, 1.25vw, 20px)',
@@ -152,8 +171,8 @@ export default function FreedomSection() {
       {/* ── Header ───────────────────────────────────────────── */}
       <div className="flex flex-col items-center gap-9 text-center">
         <div
-          className="flex items-center gap-2 text-lg font-medium rounded-full"
-          style={{ backgroundColor: 'rgb(249, 249, 249)', padding: '0.9vw 1.25vw', color: '#1d1d1f' }}
+          className="flex items-center gap-2 text-lg font-medium rounded-full px-4 py-1.5 lg:px-[1.25vw] lg:py-[0.9vw]"
+          style={{ backgroundColor: 'rgb(249, 249, 249)', color: '#1d1d1f' }}
         >
           <svg
             width="19"
@@ -210,9 +229,9 @@ export default function FreedomSection() {
           gap: '24px',
         }}
       >
-        {/* Left — negatives */}
+        {/* Left — negatives (desktop columns; mobile uses the paired block below) */}
         <div
-          className="flex flex-col"
+          className="hidden lg:flex flex-col"
           style={{ gap: '12px', fontSize: 'clamp(13px, 1.15vw, 17px)', color: '#7a7a7a' }}
         >
           {negatives.map((text) => (
@@ -239,14 +258,46 @@ export default function FreedomSection() {
           </div>
         </div>
 
-        {/* Right — positives */}
-        <div className="flex flex-col" style={{ gap: '12px', fontSize: 'clamp(13px, 1.15vw, 17px)' }}>
+        {/* Right — positives (desktop columns; mobile uses the paired block below) */}
+        <div className="hidden lg:flex flex-col" style={{ gap: '12px', fontSize: 'clamp(13px, 1.15vw, 17px)' }}>
           {positives.map((text) => (
             <div key={text} className="flex flex-col" style={CARD_STYLE}>
               <CheckIcon />
               <div style={{ color: '#1d1d1f' }}>{text}</div>
             </div>
           ))}
+        </div>
+
+        {/* Mobile-only — problem → solution PAIRS. Each grey ✕ card resolves into
+            its matching blue ✓ card so the desktop contrast survives in one column.
+            Hidden at lg+, where the three-column layout above takes over. The orb
+            (single <video>) is never duplicated — only the cards are restated here. */}
+        <div className="w-full flex flex-col lg:hidden">
+          {negatives.map((neg, i) => {
+            const isLast = i === negatives.length - 1
+            return (
+              <div
+                key={neg}
+                className="flex flex-col"
+                style={{
+                  gap: '10px',
+                  ...(isLast
+                    ? {}
+                    : { paddingBottom: '24px', marginBottom: '24px', borderBottom: '1px solid #f0f0f0' }),
+                }}
+              >
+                <div className="flex flex-col" style={CARD_STYLE}>
+                  <CrossIcon />
+                  <div style={{ color: '#7a7a7a', fontSize: '14px', lineHeight: 1.45 }}>{neg}</div>
+                </div>
+                <PairArrow />
+                <div className="flex flex-col" style={CARD_STYLE}>
+                  <CheckIcon />
+                  <div style={{ color: '#1d1d1f', fontSize: '14px', lineHeight: 1.45 }}>{positives[i]}</div>
+                </div>
+              </div>
+            )
+          })}
         </div>
       </div>
     </section>

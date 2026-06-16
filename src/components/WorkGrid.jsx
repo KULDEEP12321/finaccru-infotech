@@ -1,6 +1,7 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, useScroll, useTransform, useReducedMotion } from 'motion/react'
+import { cn } from '../lib/cn.js'
 
 // WorkGrid — a Podium-style selected-work showcase: a black, staggered masonry
 // grid of projects (title + year + client, upcoming ones greyed out) with a
@@ -89,7 +90,7 @@ function Motif({ kind }) {
 }
 
 // The thumbnail visual (gradient + motif + grain + hover sheen).
-function Thumb({ project, className = '' }) {
+function Thumb({ project, className = '', label = true }) {
   return (
     <div className={`relative h-full w-full overflow-hidden ${className}`} style={{ background: THEMES[project.theme] }}>
       <Motif kind={project.motif} />
@@ -98,10 +99,12 @@ function Thumb({ project, className = '' }) {
       <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.45) 100%)' }} />
       {/* grain */}
       <div className="absolute inset-0 opacity-[0.18] mix-blend-overlay" style={{ backgroundImage: GRAIN, backgroundSize: '120px 120px' }} />
-      {/* tiny corner index/label, like a film slate */}
-      <span className="absolute left-3 top-3 font-display text-[11px] font-medium uppercase tracking-[0.18em] text-white/60 sm:text-[10px]">
-        {project.upcoming ? 'In production' : 'Case study'}
-      </span>
+      {/* tiny corner index/label, like a film slate (omitted in the thin list reveal) */}
+      {label && (
+        <span className="absolute left-3 top-3 font-display text-[11px] font-medium uppercase tracking-[0.18em] text-white/60 sm:text-[10px]">
+          {project.upcoming ? 'In production' : 'Case study'}
+        </span>
+      )}
     </div>
   )
 }
@@ -147,9 +150,44 @@ function Card({ project, reduce }) {
 export default function WorkGrid() {
   const [view, setView] = useState('grid') // 'grid' | 'list'
   const [hovered, setHovered] = useState(null) // project for the list-view cursor preview
+  const [activeIndex, setActiveIndex] = useState(-1) // list-view scroll-active row (mobile)
   const previewRef = useRef(null)
   const sectionRef = useRef(null)
+  const listRowsRef = useRef([])
   const reduce = useReducedMotion()
+
+  // List view has no cursor on touch, so below `lg` the preview is driven by SCROLL:
+  // the row crossing the viewport centre becomes active and reveals its thumbnail
+  // inline. Desktop keeps the cursor-tracked preview (observer never runs there).
+  useEffect(() => {
+    if (view !== 'list' || typeof IntersectionObserver === 'undefined' || !window.matchMedia) {
+      setActiveIndex(-1)
+      return
+    }
+    const mq = window.matchMedia('(max-width: 1023px)')
+    let io
+    const setup = () => {
+      io?.disconnect()
+      io = null
+      setActiveIndex(-1)
+      if (!mq.matches) return // desktop → cursor preview handles it
+      io = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) {
+            if (e.isIntersecting) setActiveIndex(Number(e.target.dataset.index))
+          }
+        },
+        { rootMargin: '-46% 0px -46% 0px', threshold: 0 }
+      )
+      listRowsRef.current.forEach((el) => el && io.observe(el))
+    }
+    setup()
+    mq.addEventListener?.('change', setup)
+    return () => {
+      io?.disconnect()
+      mq.removeEventListener?.('change', setup)
+    }
+  }, [view])
 
   // Desktop staggered columns (4), distributed round-robin with per-column offsets.
   const COLS = 4
@@ -250,32 +288,54 @@ export default function WorkGrid() {
         {/* ── LIST VIEW ─────────────────────────────────────────────── */}
         {view === 'list' && (
           <div onMouseMove={onListMove} onMouseLeave={() => setHovered(null)}>
-            {projects.map((p) => (
-              <Link
-                key={p.id}
-                to="/contact"
-                onMouseEnter={() => setHovered(p)}
-                className={`group grid grid-cols-[1fr_auto] items-baseline gap-4 border-b border-white/10 py-6 transition-colors duration-300 sm:grid-cols-[5rem_1fr_12rem] sm:py-7 ${
-                  p.upcoming ? 'pointer-events-none' : 'hover:border-white/40'
-                }`}
-              >
-                <span className={`hidden font-display text-[13px] tracking-[0.16em] sm:block ${p.upcoming ? 'text-white/20' : 'text-white/35'}`}>
-                  {String(projects.indexOf(p) + 1).padStart(2, '0')}
-                </span>
-                <h3
-                  className={`display-caps text-[clamp(26px,4vw,52px)] transition-all duration-300 ${
-                    p.upcoming ? 'text-white/25' : 'text-white/80 group-hover:translate-x-2 group-hover:text-white'
-                  }`}
+            {projects.map((p, idx) => {
+              const live = activeIndex === idx && !p.upcoming // mobile scroll-active
+              return (
+                <Link
+                  key={p.id}
+                  ref={(el) => (listRowsRef.current[idx] = el)}
+                  data-index={idx}
+                  to="/contact"
+                  onMouseEnter={() => setHovered(p)}
+                  className={cn(
+                    'group relative grid grid-cols-[1fr_auto] items-baseline gap-4 border-b border-white/10 py-6 transition-colors duration-300 max-lg:overflow-hidden sm:grid-cols-[5rem_1fr_12rem] sm:py-7',
+                    p.upcoming ? 'pointer-events-none' : 'hover:border-white/40',
+                    live && 'border-white/40'
+                  )}
                 >
-                  {p.name}
-                </h3>
-                <div className={`text-right text-[12px] leading-[1.6] tracking-wide ${p.upcoming ? 'text-white/20' : 'text-white/55'}`}>
-                  <span className="sm:hidden">{p.year} · </span>
-                  <span className="uppercase">{p.sector}</span>
-                  <div className="hidden sm:block">{p.year}</div>
-                </div>
-              </Link>
-            ))}
+                  {/* mobile: scroll-active thumbnail reveals as the row backdrop, with a
+                      left-heavy scrim so the title/meta stay legible (desktop uses the
+                      cursor-tracked preview instead, so this is hidden ≥lg). */}
+                  <div
+                    aria-hidden="true"
+                    className={cn(
+                      'pointer-events-none absolute inset-0 origin-center transition-[opacity,transform] duration-[600ms] ease-out lg:hidden',
+                      live ? 'scale-100 opacity-100' : 'scale-[1.06] opacity-0'
+                    )}
+                  >
+                    <Thumb project={p} label={false} />
+                    <div className="absolute inset-0" style={{ background: 'linear-gradient(90deg, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.46) 50%, rgba(0,0,0,0.2) 100%)' }} />
+                  </div>
+                  <span className={cn('relative hidden font-display text-[13px] tracking-[0.16em] sm:block', p.upcoming ? 'text-white/20' : 'text-white/35')}>
+                    {String(idx + 1).padStart(2, '0')}
+                  </span>
+                  <h3
+                    className={cn(
+                      'relative display-caps text-[clamp(26px,4vw,52px)] transition-all duration-300',
+                      p.upcoming ? 'text-white/25' : 'text-white/80 group-hover:translate-x-2 group-hover:text-white',
+                      live && 'translate-x-2 text-white'
+                    )}
+                  >
+                    {p.name}
+                  </h3>
+                  <div className={cn('relative text-right text-[12px] leading-[1.6] tracking-wide', p.upcoming ? 'text-white/20' : 'text-white/55', live && 'text-white/80')}>
+                    <span className="sm:hidden">{p.year} · </span>
+                    <span className="uppercase">{p.sector}</span>
+                    <div className="hidden sm:block">{p.year}</div>
+                  </div>
+                </Link>
+              )
+            })}
 
             {/* cursor-tracking preview (desktop pointers only) */}
             <div

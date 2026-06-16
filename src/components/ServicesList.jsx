@@ -1,6 +1,8 @@
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Icon } from './Icons.jsx'
 import { Reveal } from './Reveal.jsx'
+import { cn } from '../lib/cn.js'
 import { services } from '../data/site.js'
 
 // ServicesList — an Armory-style "case studies" list grid for our six disciplines.
@@ -8,6 +10,11 @@ import { services } from '../data/site.js'
 // a colourful, softly-blurred image fades in (opacity 0→1) inside the left media
 // cell — exactly the reveal Armory uses for its project image — while the icon
 // flips to white, the title shifts to brand blue, and the chevron nudges.
+//
+// Touch devices have no hover, so below `lg` the same reveal is driven by SCROLL:
+// the row crossing the viewport centre becomes "active" (an IntersectionObserver
+// with a thin centre band picks it), and gets the identical treatment. A compact
+// media square is shown on mobile so the image reveal has somewhere to land.
 //
 // Images live in /public/img/services (abstract cosmic visuals). A dark brand
 // gradient sits beneath each as a fallback/tint, and a radial scrim keeps the
@@ -22,21 +29,31 @@ const VISUALS = {
   managed: { img: '/img/services/managed.jpg', grad: 'linear-gradient(150deg,#2a1604,#08182e)' },
 }
 
-function ServiceRow({ service, index }) {
+function ServiceRow({ service, index, active, rowRef }) {
   const v = VISUALS[service.id] || VISUALS.software
   const num = String(index + 1).padStart(2, '0')
   return (
     <Link
+      ref={rowRef}
+      data-index={index}
       to="/services"
       aria-label={`${service.name} — ${service.tagline}`}
-      className="group relative block border-t border-hairline transition-colors duration-300 hover:bg-parchment/60 last:border-b"
+      className={cn(
+        'group relative block border-t border-hairline transition-colors duration-300 hover:bg-parchment/60 last:border-b',
+        active && 'bg-parchment/60' // mobile: scroll-active highlight (desktop never sets this)
+      )}
     >
-      <div className="grid grid-cols-1 items-stretch gap-x-0 gap-y-3 py-6 lg:grid-cols-[clamp(190px,19vw,264px)_84px_minmax(0,1.3fr)_minmax(0,1fr)_56px] lg:gap-y-0 lg:py-0">
-        {/* ── Media cell — icon at rest, blurred image reveals on hover ────── */}
-        <div className="relative hidden h-[clamp(124px,13vw,152px)] w-full self-center overflow-hidden rounded-md bg-parchment lg:block">
-          {/* hover reveal layer (image over a dark brand tint) */}
+      {/* flex (media | text) on mobile; the original 5-column grid on lg (the text
+          wrapper is display:contents at lg, so the grid is byte-identical there). */}
+      <div className="flex items-center gap-4 py-5 lg:grid lg:grid-cols-[clamp(190px,19vw,264px)_84px_minmax(0,1.3fr)_minmax(0,1fr)_56px] lg:items-stretch lg:gap-0 lg:py-0">
+        {/* ── Media cell — compact square on mobile, big rectangle on lg ────── */}
+        <div className="relative h-[72px] w-[72px] shrink-0 self-center overflow-hidden rounded-md bg-parchment lg:h-[clamp(124px,13vw,152px)] lg:w-full">
+          {/* reveal layer (image over a dark brand tint) — hover on desktop, active on mobile */}
           <div
-            className="absolute inset-0 opacity-0 transition-opacity duration-[500ms] ease-out group-hover:opacity-100"
+            className={cn(
+              'absolute inset-0 transition-opacity duration-[500ms] ease-out group-hover:opacity-100',
+              active ? 'opacity-100' : 'opacity-0'
+            )}
             style={{ background: v.grad }}
           >
             <img
@@ -53,33 +70,46 @@ function ServiceRow({ service, index }) {
           </div>
           {/* icon (flips to white over the revealed image) */}
           <span className="absolute inset-0 grid place-items-center">
-            <Icon name={service.icon} size={32} className="relative text-primary transition-colors duration-300 group-hover:text-white" />
+            <Icon
+              name={service.icon}
+              size={32}
+              className={cn('relative transition-colors duration-300 group-hover:text-white', active ? 'text-white' : 'text-primary')}
+            />
           </span>
-          <span className="label-caps absolute left-3 top-3 z-10 text-[10px] tracking-[0.16em] text-ink-muted48 transition-colors duration-300 group-hover:text-white/75">
+          {/* corner index — desktop only (it's already in the text column on mobile) */}
+          <span className="label-caps absolute left-3 top-3 z-10 hidden text-[10px] tracking-[0.16em] text-ink-muted48 transition-colors duration-300 group-hover:text-white/75 lg:block">
             {num}
           </span>
         </div>
 
-        {/* ── Index (//01) ─────────────────────────────────────────────── */}
-        <div className="flex items-center lg:border-l lg:border-hairline lg:pl-9">
-          <span className="font-display text-[14px] tracking-[0.04em] text-ink-muted48">//{num}</span>
+        {/* text cells — stacked column on mobile, three grid items on lg (contents) */}
+        <div className="flex min-w-0 flex-col gap-1 lg:contents">
+          {/* ── Index (//01) ─────────────────────────────────────────────── */}
+          <div className="flex items-center lg:border-l lg:border-hairline lg:pl-9">
+            <span className="font-display text-[13px] tracking-[0.04em] text-ink-muted48 lg:text-[14px]">//{num}</span>
+          </div>
+
+          {/* ── Title ────────────────────────────────────────────────────── */}
+          <div className="flex items-center">
+            <h3
+              className={cn(
+                'display-caps text-[22px] transition-colors duration-300 group-hover:text-primary sm:text-[28px] lg:text-[31px]',
+                active ? 'text-primary' : 'text-ink'
+              )}
+            >
+              {service.name}
+            </h3>
+          </div>
+
+          {/* ── Description ──────────────────────────────────────────────── */}
+          <div className="flex items-center lg:border-l lg:border-hairline lg:pl-9">
+            <p className="max-w-md text-caption leading-relaxed text-ink-muted80 lg:text-ink-muted48">
+              {service.summary}
+            </p>
+          </div>
         </div>
 
-        {/* ── Title ────────────────────────────────────────────────────── */}
-        <div className="flex items-center">
-          <h3 className="display-caps text-[24px] text-ink transition-colors duration-300 group-hover:text-primary sm:text-[28px] lg:text-[31px]">
-            {service.name}
-          </h3>
-        </div>
-
-        {/* ── Description ──────────────────────────────────────────────── */}
-        <div className="flex items-center lg:border-l lg:border-hairline lg:pl-9">
-          <p className="max-w-md text-caption leading-relaxed text-ink-muted80 lg:text-ink-muted48">
-            {service.summary}
-          </p>
-        </div>
-
-        {/* ── Chevron ──────────────────────────────────────────────────── */}
+        {/* ── Chevron (desktop only) ───────────────────────────────────────── */}
         <div className="hidden items-center justify-end pr-1 text-primary lg:flex">
           <span className="text-[22px] font-semibold leading-none transition-transform duration-300 ease-apple group-hover:translate-x-1.5">
             &raquo;
@@ -91,11 +121,49 @@ function ServiceRow({ service, index }) {
 }
 
 export default function ServicesList() {
+  const [activeIndex, setActiveIndex] = useState(-1)
+  const rowsRef = useRef([])
+
+  // Below `lg`, light up the row crossing the viewport centre as you scroll — the
+  // touch-friendly stand-in for :hover. A near-zero centre band means exactly one
+  // row qualifies at a time. Desktop keeps pure hover (observer never runs).
+  useEffect(() => {
+    if (typeof IntersectionObserver === 'undefined' || !window.matchMedia) return
+    const mq = window.matchMedia('(max-width: 1023px)')
+    let io
+    const setup = () => {
+      io?.disconnect()
+      io = null
+      setActiveIndex(-1)
+      if (!mq.matches) return // desktop → hover handles it
+      io = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) {
+            if (e.isIntersecting) setActiveIndex(Number(e.target.dataset.index))
+          }
+        },
+        { rootMargin: '-46% 0px -46% 0px', threshold: 0 }
+      )
+      rowsRef.current.forEach((el) => el && io.observe(el))
+    }
+    setup()
+    mq.addEventListener?.('change', setup)
+    return () => {
+      io?.disconnect()
+      mq.removeEventListener?.('change', setup)
+    }
+  }, [])
+
   return (
     <div>
       {services.map((s, i) => (
         <Reveal key={s.id} delay={(i % 3) * 0.06} y={18}>
-          <ServiceRow service={s} index={i} />
+          <ServiceRow
+            service={s}
+            index={i}
+            active={i === activeIndex}
+            rowRef={(el) => (rowsRef.current[i] = el)}
+          />
         </Reveal>
       ))}
     </div>
