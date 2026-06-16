@@ -100,7 +100,7 @@ export function Button({
 // ── Logo ───────────────────────────────────────────────────────────────
 export function Logo({ onDark = false, className = '' }) {
   return (
-    <Link to="/" className={`group inline-flex items-center gap-2.5 ${className}`}>
+    <Link to="/" className={`group inline-flex items-center gap-2.5 max-sm:min-h-[44px] ${className}`}>
       <span className="grid h-7 w-7 place-items-center rounded-sm bg-primary text-white">
         <svg width="16" height="16" viewBox="0 0 64 64" aria-hidden="true">
           <path d="M22 18h22v6.5H29.4v8.2h12.9v6.4H29.4V46H22V18Z" fill="currentColor" />

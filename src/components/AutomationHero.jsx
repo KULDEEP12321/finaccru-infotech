@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { motion, useReducedMotion } from 'motion/react'
 
 // AutomationHero — a full-viewport (100vh) statement over a fixed background
@@ -5,13 +6,15 @@ import { motion, useReducedMotion } from 'motion/react'
 // ALL page content at z-index:-1, so every (opaque) section covers it and only
 // this transparent section reveals it — a true viewport-fixed parallax, no bleed.
 //
-// Graceful degradation for old / low-power devices:
-//  • A static poster image always sits behind, so the section is NEVER blank —
-//    even if the video fails to load or autoplay is blocked (iOS Low Power Mode,
-//    old browsers): the <video poster> frame / the poster layer shows instead.
-//  • On reduced-motion, data-saver, or very weak devices we skip the video
-//    entirely (no 6 MB download, no continuous decode) and show only the poster.
-//  • Reduced-motion also disables the word stagger (text renders instantly).
+// The video plays for EVERYONE — including low-power / power-saving / reduced-
+// motion / low-end devices. We no longer skip it for any device class.
+//  • A static poster image always sits behind, so the section is NEVER blank
+//    while the video buffers or if it genuinely fails to load.
+//  • Many browsers (iOS Low Power Mode, battery-saver Chrome) ignore the
+//    `autoPlay` attribute, so we also kick playback from JS and retry on the
+//    first user interaction and whenever the tab becomes visible again.
+//  • Reduced-motion still disables the text word-stagger (text renders
+//    instantly) — that's an accessibility nicety unrelated to the video.
 
 const VIDEO_SRC = '/video/automation-hero.mp4'
 const POSTER = '/img/automation-hero-poster.jpg'
@@ -19,20 +22,37 @@ const HEADING = 'WE BUILD END-TO-END AI AUTOMATION SYSTEMS.'
 const WORDS = HEADING.split(' ')
 const EASE = [0.22, 1, 0.36, 1]
 
-// True for devices/users where a fixed autoplay video is unwelcome or unaffordable.
-function useLiteMode(reduce) {
-  if (reduce) return true
-  if (typeof navigator === 'undefined') return false
-  const c = navigator.connection
-  if (c && c.saveData) return true
-  if (navigator.deviceMemory && navigator.deviceMemory <= 2) return true
-  if (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 2) return true
-  return false
-}
-
 export default function AutomationHero() {
   const reduce = useReducedMotion()
-  const lite = useLiteMode(reduce)
+  const videoRef = useRef(null)
+
+  // Force autoplay everywhere. The `autoPlay` attribute alone is silently
+  // ignored on power-saving / low-power devices, so we call play() on mount and
+  // keep retrying on the first user gesture or when the tab regains focus.
+  useEffect(() => {
+    const v = videoRef.current
+    if (!v) return
+
+    const tryPlay = () => {
+      const p = v.play()
+      if (p && typeof p.catch === 'function') p.catch(() => {})
+    }
+
+    tryPlay()
+
+    const onInteract = () => tryPlay()
+    const onVisible = () => { if (!document.hidden) tryPlay() }
+    const events = ['touchstart', 'pointerdown', 'click', 'scroll', 'keydown']
+    events.forEach((e) => window.addEventListener(e, onInteract, { passive: true }))
+    document.addEventListener('visibilitychange', onVisible)
+    v.addEventListener('canplay', tryPlay)
+
+    return () => {
+      events.forEach((e) => window.removeEventListener(e, onInteract))
+      document.removeEventListener('visibilitychange', onVisible)
+      v.removeEventListener('canplay', tryPlay)
+    }
+  }, [])
 
   return (
     <section className="font-helvetica-now relative flex h-screen flex-col justify-center px-8 pb-8 pt-[70px] max-[900px]:px-[18px] max-[900px]:pt-[90px]">
@@ -43,21 +63,20 @@ export default function AutomationHero() {
         style={{ zIndex: -2, backgroundImage: `url(${POSTER})` }}
       />
 
-      {/* Fixed background video — skipped entirely on lite/reduced-motion devices. */}
-      {!lite && (
-        <video
-          className="pointer-events-none fixed left-0 top-0 h-screen w-full object-cover"
-          style={{ zIndex: -1 }}
-          src={VIDEO_SRC}
-          poster={POSTER}
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="auto"
-          aria-hidden="true"
-        />
-      )}
+      {/* Fixed background video — always rendered, plays for every device. */}
+      <video
+        ref={videoRef}
+        className="pointer-events-none fixed left-0 top-0 h-screen w-full object-cover"
+        style={{ zIndex: -1 }}
+        src={VIDEO_SRC}
+        poster={POSTER}
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="metadata"
+        aria-hidden="true"
+      />
 
       {/* Content */}
       <div className="flex max-w-[720px] flex-col items-start">

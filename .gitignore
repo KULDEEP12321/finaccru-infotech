@@ -12,3 +12,5 @@ npm-debug.log*
 # local tooling & throwaway capture artifacts
 .claude/
 podium-enter.webm
+podium-effect-reference.webm
+workgrid-effect-ours.webm

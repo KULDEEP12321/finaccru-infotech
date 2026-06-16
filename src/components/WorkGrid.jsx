@@ -99,7 +99,7 @@ function Thumb({ project, className = '' }) {
       {/* grain */}
       <div className="absolute inset-0 opacity-[0.18] mix-blend-overlay" style={{ backgroundImage: GRAIN, backgroundSize: '120px 120px' }} />
       {/* tiny corner index/label, like a film slate */}
-      <span className="absolute left-3 top-3 font-display text-[10px] font-medium uppercase tracking-[0.18em] text-white/60">
+      <span className="absolute left-3 top-3 font-display text-[11px] font-medium uppercase tracking-[0.18em] text-white/60 sm:text-[10px]">
         {project.upcoming ? 'In production' : 'Case study'}
       </span>
     </div>
@@ -135,7 +135,7 @@ function Card({ project, reduce }) {
         >
           {project.name}
         </h3>
-        <div className={`shrink-0 pt-1 text-right text-[11px] leading-[1.5] tracking-wide ${project.upcoming ? 'text-white/25' : 'text-white/55'}`}>
+        <div className={`shrink-0 pt-1 text-right text-[12px] leading-[1.5] tracking-wide sm:text-[11px] ${project.upcoming ? 'text-white/25' : 'text-white/55'}`}>
           <div>{project.year}</div>
           <div className="uppercase">{project.sector}</div>
         </div>
@@ -157,14 +157,14 @@ export default function WorkGrid() {
   const colOffset = ['lg:mt-0', 'lg:mt-[15vh]', 'lg:mt-[6vh]', 'lg:mt-[24vh]']
 
   // ── Podium-style per-column parallax ────────────────────────────────────────
-  // As the section travels through the viewport (progress 0→1), each column drifts
-  // vertically at a different speed *and* direction, so the eye keeps finding a new
-  // focal column while others slide past. Coefficients reverse-engineered from
-  // podium.global: translateY ≈ scroll × [-0.059, +0.047, -0.036, +0.031] — i.e.
-  // alternating direction with decreasing magnitude across the four columns.
+  // As the section travels through the viewport (progress 0→1) the columns drift
+  // vertically. Odd columns (1 & 3) rush UP fast and dissolve into the top veil;
+  // even columns (2 & 4) drift gently DOWN and linger — so 1 & 3 read as the fast
+  // pair that "reaches the top and fades away" (podium.global's signature, pushed
+  // a touch harder than podium's own ~[-0.105, +0.084, -0.063, +0.055] px/px).
   const { scrollYProgress } = useScroll({ target: sectionRef, offset: ['start end', 'end start'] })
-  const PARALLAX = 120 // px of half-travel for the fastest (leftmost) column
-  const colFactor = [-1, 0.8, -0.6, 0.52] // normalized podium speeds (sign = direction)
+  const PARALLAX = 200 // px of half-travel for the fastest column
+  const colFactor = [-1, 0.5, -0.85, 0.45] // cols 1 & 3 fast-up; cols 2 & 4 gentle-down
   // Hooks must be unconditional and fixed in count → one transform per column.
   const yA = useTransform(scrollYProgress, [0, 1], [-colFactor[0] * PARALLAX, colFactor[0] * PARALLAX])
   const yB = useTransform(scrollYProgress, [0, 1], [-colFactor[1] * PARALLAX, colFactor[1] * PARALLAX])
@@ -191,8 +191,11 @@ export default function WorkGrid() {
       <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-20 hidden lg:block">
         <div className="sticky top-0 h-screen w-full">
           <div
-            className="absolute inset-x-0 top-0 h-[24vh]"
-            style={{ background: 'linear-gradient(to bottom, #000 0%, rgba(0,0,0,0.5) 46%, transparent 100%)' }}
+            className="absolute inset-x-0 top-0 h-[38vh]"
+            style={{
+              background:
+                'linear-gradient(to bottom, #000 0%, rgba(0,0,0,0.7) 32%, rgba(0,0,0,0.22) 72%, transparent 100%)',
+            }}
           />
           <div
             className="absolute inset-x-0 bottom-0 h-[40vh]"
@@ -298,7 +301,7 @@ export default function WorkGrid() {
                 type="button"
                 onClick={() => setView(key)}
                 aria-pressed={view === key}
-                className={`inline-flex items-center gap-2 rounded-pill px-4 py-2 text-[12px] font-medium uppercase tracking-[0.14em] transition-colors duration-200 ${
+                className={`inline-flex items-center gap-2 rounded-pill px-4 py-2 text-[12px] font-medium uppercase tracking-[0.14em] transition-colors duration-200 max-sm:min-h-[44px] max-sm:py-3 ${
                   view === key ? 'bg-white text-black' : 'text-white/65 hover:text-white'
                 }`}
               >

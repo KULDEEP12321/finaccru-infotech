@@ -1,3 +1,5 @@
+import { useEffect, useRef } from 'react'
+
 // Seamless, pure-CSS logo marquee. Each card carries an equal trailing margin
 // (no flex gap), so the doubled track is perfectly periodic — translateX(-50%)
 // loops without a seam. Logos are quiet (grayscale) until hovered.
@@ -36,9 +38,28 @@ function Card({ logo }) {
 
 export default function Marquee() {
   const track = [...logos, ...logos]
+  const trackRef = useRef(null)
+
+  // Pause the 36s translateX loop while the marquee is scrolled out of view so
+  // the compositor stops ticking it (most of the time it's offscreen). Setting
+  // the inline play-state back to '' (not 'running') when visible lets the CSS
+  // :hover-pause rule keep working — an inline 'running' would override it.
+  useEffect(() => {
+    const el = trackRef.current
+    if (!el || typeof IntersectionObserver === 'undefined') return
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        el.style.animationPlayState = entry.isIntersecting ? '' : 'paused'
+      },
+      { threshold: 0 }
+    )
+    io.observe(el)
+    return () => io.disconnect()
+  }, [])
+
   return (
     <div className="marquee-pause marquee-mask overflow-hidden py-2">
-      <div className="flex w-max animate-marquee">
+      <div ref={trackRef} className="flex w-max animate-marquee">
         {track.map((logo, i) => (
           <Card key={i} logo={logo} />
         ))}

@@ -32,6 +32,32 @@ const CX = 450 // grow about the stem MIDLINE (symmetric → no drift)
 const CY = 500
 const STEM_HALF = 50 // stem half-width in viewBox units (drives the engulf scale)
 
+// ── Responsive F sizing ─────────────────────────────────────────────────────────
+// The viewBox is `slice`-fit, so a native-size F scales with the LONGER viewport
+// edge: it balloons on wide / 16:9 monitors (and clips on ultrawide) and crowds the
+// copy on phones & portrait tablets. Instead we size the F to a target fraction of
+// viewport HEIGHT — consistent on every device — and choose the layout by width:
+//   • COMPACT (width < WIDE_BP): a small F as a centred badge, lifted into the upper
+//     area, with the copy in a clean band below it (phones, portrait tablets, narrow
+//     windows, short landscape tablets).
+//   • WIDE   (width ≥ WIDE_BP): a large F centred on screen with the copy beside it
+//     on the left (laptops & monitors), capped at WIDE_H of the height so it never
+//     bleeds off the top/bottom.
+// The engulf dive is untouched — the F still grows from this resting size to sEnd.
+const F_H = 540 // F path height in viewBox units (y230 → y770)
+const PHONE_BP = 640 // < this width the copy stacks in a full-width band below the F
+const WIDE_BP = 1280 // ≥ this width the copy fits beside the F → wide layout
+const COMPACT_H = 0.324 // resting F height as a fraction of viewport height (compact)
+const COMPACT_CENTER = 0.325 // F vertical centre as a fraction of height (tablet)
+const WIDE_H = 0.85 // max F height as a fraction of viewport height (wide)
+const NAV_H = 69 // sticky navbar height (px); the stage sits below it at scroll 0
+// Phone: how far (px) up from the viewport bottom the copy block reaches. The F is
+// centred in the band between the navbar and this line, so the gaps above and below
+// it match on every phone height. Larger when the two CTAs wrap to a second row.
+const CTA_WRAP_BP = 405 // < this width the two CTAs wrap → taller copy block
+const COPY_EXTENT_1ROW = 192 // px bottom→copy-top with the CTAs side by side
+const COPY_EXTENT_2ROW = 247 // px bottom→copy-top with the CTAs stacked
+
 // Per-frame smoothing for the scrub. The displayed progress eases toward the
 // scroll-derived target instead of snapping to it, so the dive glides — buttery
 // on smooth wheel, and crucially un-janky on coarse/touch scroll (where Lenis
@@ -57,6 +83,16 @@ export default function FHero() {
   useEffect(() => {
     let raf = 0
 
+    // Cheap OUTER gate: once the hero is well offscreen we must not keep calling
+    // getBoundingClientRect() every frame (a forced synchronous layout that would
+    // otherwise tax the main thread at refresh rate for the entire rest of the
+    // page). An IntersectionObserver flips this flag; the precise per-frame
+    // `r.bottom>0 && r.top<innerHeight` test below still governs ALL visual work,
+    // so the dive is byte-identical whenever the hero is near/in view. The 400px
+    // rootMargin wakes the loop slightly before the section actually enters, so
+    // the precise gate is always live in time — no missed edge frames.
+    let nearView = true
+
     // parchment #f5f5f7 → dark tile #272729 (== WorkMontage bg, so slivers vanish)
     const F5 = [0xf5, 0xf5, 0xf7]
     const DK = [0x27, 0x27, 0x29]
@@ -64,7 +100,7 @@ export default function FHero() {
       `rgb(${(lerp(F5[0], DK[0], t) | 0)},${(lerp(F5[1], DK[1], t) | 0)},${(lerp(F5[2], DK[2], t) | 0)})`
 
     const tick = () => {
-      const t = trackRef.current
+      const t = nearView ? trackRef.current : null
       if (t) {
         const r = t.getBoundingClientRect()
         // Offscreen early-out: skip all layout writes when the hero isn't visible.
@@ -98,15 +134,39 @@ export default function FHero() {
           const dxPx = Math.max(originX, w - originX) // farthest horizontal edge
           // scaled stem half-width (STEM_HALF*u*S) must reach dxPx, + margin
           const sEnd = Math.max(6, (dxPx / (STEM_HALF * u)) * 1.25)
-          const S = lerp(1, sEnd, e)
+
+          // ── Responsive resting size + position (see constants above) ──────────
+          // Height-targeted so the F is a consistent fraction of the viewport on
+          // every device; the dive still grows from `base` to the SAME sEnd.
+          const compact = w < WIDE_BP
+          let targetH = WIDE_H
+          let centerFrac = 0.5
+          if (w < PHONE_BP) {
+            // Phone: the copy stacks in a band BELOW the F. Centre the F in the band
+            // between the navbar and the copy's top so the gaps above and below it
+            // match at any phone height (no big void on tall phones); on short phones
+            // the band shrinks, so the F shrinks too and can't hit the copy.
+            const copyExtent = w < CTA_WRAP_BP ? COPY_EXTENT_2ROW : COPY_EXTENT_1ROW
+            const band = Math.max(0, h - NAV_H - copyExtent)
+            targetH = Math.min(COMPACT_H, (band * 0.6) / h)
+            centerFrac = band / (2 * h)
+          } else if (compact) {
+            // Tablet / narrow window: copy sits bottom-left, clear of the centred F.
+            targetH = COMPACT_H
+            centerFrac = COMPACT_CENTER
+          }
+          const base = Math.min(1, (targetH * h) / (F_H * u)) // never enlarge past native
+          const rise = ((0.5 - centerFrac) * h) / u // viewBox units the F lifts upward
+          const S = lerp(base, sEnd, e)
 
           // Scale ONLY the F subpath about (CX,CY). The translate/scale/translate
           // triple encodes the origin (CSS transform-origin is ignored for the SVG
           // `transform` ATTRIBUTE, so we don't set it).
           if (fRef.current) {
+            const pre = rise > 0.5 ? `translate(0 ${-rise.toFixed(1)}) ` : ''
             fRef.current.setAttribute(
               'transform',
-              `translate(${CX} ${CY}) scale(${S}) translate(${-CX} ${-CY})`
+              `${pre}translate(${CX} ${CY}) scale(${S}) translate(${-CX} ${-CY})`
             )
           }
           // Field parchment → dark (done by ~p=0.62) so arm gaps dissolve.
@@ -133,7 +193,22 @@ export default function FHero() {
       raf = requestAnimationFrame(tick)
     }
     raf = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(raf)
+
+    // Drive the outer gate. Default-true above means it works before the first
+    // IO callback fires (the hero is at the very top, on screen at load).
+    let io
+    const trackEl = trackRef.current
+    if (trackEl && typeof IntersectionObserver !== 'undefined') {
+      io = new IntersectionObserver(([entry]) => { nearView = entry.isIntersecting }, {
+        rootMargin: '400px 0px',
+      })
+      io.observe(trackEl)
+    }
+
+    return () => {
+      cancelAnimationFrame(raf)
+      if (io) io.disconnect()
+    }
   }, [])
 
   // ── F window SVG (shared by both branches) ─────────────────────────────────────
@@ -169,7 +244,11 @@ export default function FHero() {
   // Copy sits BOTTOM-LEFT on the parchment (Podium-style) so it never lands
   // unreadable over the dark F window; the scroll hint sits bottom-right.
   const copyBlock = (
-    <div className="absolute bottom-10 left-6 max-w-[78vw] text-left sm:bottom-14 sm:left-12 sm:max-w-md">
+    // bottom-24 on mobile (not bottom-12): the sticky stage starts BELOW the 68px
+    // sticky navbar, so its bottom overflows ~68px past the visible viewport. The
+    // extra offset lifts the CTAs back above the fold (incl. when they wrap). Desktop
+    // keeps sm:bottom-14 — it has the vertical slack, so it's unchanged.
+    <div className="absolute bottom-24 left-6 right-6 max-w-none text-left sm:bottom-14 sm:left-12 sm:right-auto sm:max-w-md">
       <Eyebrow className="mb-3">A ProtechPlanner company · Software &amp; IT</Eyebrow>
       <h1 className="display-caps text-[26px] text-ink sm:text-[46px]">
         We build the software your business runs on.
@@ -195,7 +274,10 @@ export default function FHero() {
   return (
     // Tall scroll-track; the stage inside is sticky for the scrubbed aperture dive.
     <section ref={trackRef} className="relative bg-parchment" style={{ height: '260vh' }}>
-      <div className="sticky top-0 h-screen overflow-hidden bg-parchment">
+      {/* h-[100dvh] (not h-screen/100vh): on mobile the browser chrome eats into
+          100vh, so a bottom-anchored copy block lands behind it and clips the CTAs.
+          dvh tracks the VISIBLE viewport; on desktop dvh == vh (byte-identical). */}
+      <div className="sticky top-0 h-[100dvh] overflow-hidden bg-parchment">
         {/* 1 — the cinematic AriaHero scene, visible ONLY through the F window */}
         <div ref={montageRef} className="absolute inset-0 will-change-transform">
           <AriaHero active={dived} />

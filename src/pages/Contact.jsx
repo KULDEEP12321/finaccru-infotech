@@ -51,7 +51,7 @@ export default function Contact() {
               </a>
             </div>
 
-            <div className="mt-10 grid grid-cols-3 gap-4 border-t border-hairline pt-8">
+            <div className="mt-10 grid grid-cols-1 gap-4 border-t border-hairline pt-8 sm:grid-cols-3">
               {offices.map((o) => (
                 <div key={o.city}>
                   <p className="text-fine uppercase tracking-[0.06em] text-primary">{o.role}</p>

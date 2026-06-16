@@ -33,7 +33,7 @@ export default function Home() {
           <Reveal delay={0.1}>
             <a
               href="/services"
-              className="mt-8 inline-flex items-center gap-1.5 text-body-lg text-primary-ondark"
+              className="mt-8 inline-flex items-center gap-1.5 text-body-lg text-primary-ondark max-sm:min-h-[44px] max-sm:py-2"
             >
               See how we work
               <Icon name="arrow" size={18} />
@@ -45,7 +45,7 @@ export default function Home() {
       {/* ── Trusted-by marquee ─────────────────────────────────── */}
       <section className="border-y border-black/[0.05] bg-canvas">
         <Container className="py-12">
-          <p className="label-caps mb-7 text-center text-[11px] tracking-[0.16em] text-ink-muted48">
+          <p className="label-caps mb-7 text-center text-[12px] tracking-[0.16em] text-ink-muted48 sm:text-[11px]">
             Trusted by teams building on modern stacks
           </p>
           <Marquee />

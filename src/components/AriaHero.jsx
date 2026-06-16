@@ -28,15 +28,26 @@ const DPR_CAP = 2 // 1600px source is the ceiling; >2x backing store buys nothin
 const POSTER_URL = '/finn/frame-018.webp'
 const frameURL = (i) => `/finn/frame-${String(i + 1).padStart(3, '0')}.webp`
 
-// Scrub only where a precise, hovering pointer exists (desktop / 2-in-1 with mouse),
-// and never under reduced-motion. Touch-only phones fall back to the static poster
-// (one ~19KB image) — no canvas, no preload, no rAF.
-const canScrub = () =>
-  typeof window !== 'undefined' &&
-  !!window.matchMedia &&
-  window.matchMedia('(any-pointer: fine)').matches &&
-  window.matchMedia('(any-hover: hover)').matches &&
-  !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+// Touch tuning — a finger swipe should sweep more frames than the equivalent mouse
+// move, and a comfortable phone tilt (gamma°) should cover the whole look range.
+const TOUCH_SENSITIVITY = 2.4
+const TILT_RANGE = 34 // ± degrees of left/right tilt mapped across the full sequence
+
+// How the scene is driven, by input capability (re-evaluated live in E0):
+//   'fine'  → precise hovering pointer (mouse): scrub follows the cursor; eager preload.
+//   'touch' → coarse pointer (phone/tablet): scrub follows a finger drag + device tilt;
+//             the ~2MB frame preload is deferred until the scene is reached (active).
+//   'none'  → reduced-motion: the static poster only (no canvas / preload / rAF).
+const pointerMode = () => {
+  if (typeof window === 'undefined' || !window.matchMedia) return 'none'
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return 'none'
+  const fine =
+    window.matchMedia('(any-pointer: fine)').matches &&
+    window.matchMedia('(any-hover: hover)').matches
+  if (fine) return 'fine'
+  if (window.matchMedia('(any-pointer: coarse)').matches) return 'touch'
+  return 'none'
+}
 
 // ── useTypewriter ───────────────────────────────────────────────────────────
 // Reveals `text` one character at a time after `startDelay`. Returns { displayed, done }.
@@ -80,9 +91,12 @@ function CopyIcon() {
 }
 
 export default function AriaHero({ active = true }) {
-  // `interactive` is seeded synchronously so the first paint is already correct
-  // (a touch device never momentarily mounts a canvas before bailing).
-  const [interactive, setInteractive] = useState(canScrub)
+  // Seeded synchronously so the first paint is already correct (no canvas flash on
+  // touch). 'fine' scrubs eagerly; 'touch' waits until the scene is reached (active)
+  // before mounting the canvas + preloading frames, so phones don't pay for ~2MB
+  // unless they actually dive in.
+  const [mode, setMode] = useState(pointerMode) // 'fine' | 'touch' | 'none'
+  const interactive = mode === 'fine' || (mode === 'touch' && active)
   const [ready, setReady] = useState(false) // first real frame drawn → fade canvas in
 
   const canvasRef = useRef(null)
@@ -94,14 +108,17 @@ export default function AriaHero({ active = true }) {
   const visibleRef = useRef(true)
   const readyRef = useRef(false)
   // The entire scrub hot-path lives in refs → no re-render at pointer rate.
-  const s = useRef({ current: PARK, target: PARK, prevX: null, lastDrawn: -1, dirty: true, lastT: 0 })
+  const s = useRef({ current: PARK, target: PARK, prevX: null, lastDrawn: -1, dirty: true, lastT: 0, touching: false })
 
-  // ── E0 — capability listeners: plugging in a mouse / toggling reduced-motion flips it.
+  // ── E0 — capability listeners: plugging in a mouse / toggling reduced-motion re-picks the mode.
   useEffect(() => {
-    const mqs = ['(any-pointer: fine)', '(any-hover: hover)', '(prefers-reduced-motion: reduce)'].map(
-      (q) => window.matchMedia?.(q)
-    )
-    const apply = () => setInteractive(canScrub())
+    const mqs = [
+      '(any-pointer: fine)',
+      '(any-hover: hover)',
+      '(any-pointer: coarse)',
+      '(prefers-reduced-motion: reduce)',
+    ].map((q) => window.matchMedia?.(q))
+    const apply = () => setMode(pointerMode())
     mqs.forEach((mq) => mq?.addEventListener?.('change', apply))
     return () => mqs.forEach((mq) => mq?.removeEventListener?.('change', apply))
   }, [])
@@ -121,6 +138,7 @@ export default function AriaHero({ active = true }) {
     st.lastDrawn = -1
     st.dirty = true
     st.lastT = 0
+    st.touching = false
     loadedRef.current = new Uint8Array(FRAME_COUNT)
     imagesRef.current = new Array(FRAME_COUNT).fill(null)
 
@@ -250,6 +268,49 @@ export default function AriaHero({ active = true }) {
       st.prevX = null // re-entry far away won't fling
     }
 
+    // ── Touch: drag horizontally to aim FINN (same delta→frame mapping as the mouse,
+    //    just brisker so a finger swipe covers the look range).
+    const onTouchStart = (e) => {
+      st.touching = true
+      const t = e.touches[0]
+      if (t) st.prevX = t.clientX
+    }
+    const onTouchMove = (e) => {
+      if (!visibleRef.current) {
+        st.prevX = null
+        return
+      }
+      const t = e.touches[0]
+      if (!t) return
+      if (st.prevX === null) {
+        st.prevX = t.clientX
+        return
+      }
+      const delta = t.clientX - st.prevX
+      st.prevX = t.clientX
+      st.target = clamp(
+        st.target + (delta / window.innerWidth) * TOUCH_SENSITIVITY * (FRAME_COUNT - 1),
+        0,
+        FRAME_COUNT - 1
+      )
+      requestTick()
+    }
+    const onTouchEnd = () => {
+      st.prevX = null
+      st.touching = false
+    }
+    // ── Device tilt: ambient "looks where you tilt" — gamma is the left/right tilt in
+    //    degrees (flat → centre frame). Yields to an active finger drag. Fires on
+    //    Android out of the box; on iOS only once motion access is granted.
+    const onTilt = (e) => {
+      if (!visibleRef.current || st.touching) return
+      const g = e.gamma
+      if (g == null) return
+      const norm = clamp(g / TILT_RANGE, -1, 1)
+      st.target = (FRAME_COUNT - 1) * (0.5 + norm * 0.5)
+      requestTick()
+    }
+
     // Preload ALL frames upfront in priority order (PARK first, spiralling out) so
     // teardown can abort every one symmetrically — no deferred-creation race.
     const order = [PARK]
@@ -314,9 +375,20 @@ export default function AriaHero({ active = true }) {
     }
     armDpr()
 
-    window.addEventListener('mousemove', onMove, { passive: true })
+    // Input source by capability. Mouse → cursor scrub; touch → finger-drag scrub
+    // plus ambient device tilt. We never force the iOS motion-permission prompt here;
+    // drag works regardless, and tilt lights up wherever the sensor is already allowed.
+    if (mode === 'touch') {
+      window.addEventListener('touchstart', onTouchStart, { passive: true })
+      window.addEventListener('touchmove', onTouchMove, { passive: true })
+      window.addEventListener('touchend', onTouchEnd, { passive: true })
+      window.addEventListener('touchcancel', onTouchEnd, { passive: true })
+      window.addEventListener('deviceorientation', onTilt, { passive: true })
+    } else {
+      window.addEventListener('mousemove', onMove, { passive: true })
+      document.addEventListener('mouseleave', onLeave)
+    }
     window.addEventListener('blur', onLeave)
-    document.addEventListener('mouseleave', onLeave)
     window.addEventListener('resize', sizeCanvas)
 
     return () => {
@@ -324,8 +396,13 @@ export default function AriaHero({ active = true }) {
       if (rafRef.current) cancelAnimationFrame(rafRef.current)
       rafRef.current = 0
       window.removeEventListener('mousemove', onMove)
-      window.removeEventListener('blur', onLeave)
       document.removeEventListener('mouseleave', onLeave)
+      window.removeEventListener('touchstart', onTouchStart)
+      window.removeEventListener('touchmove', onTouchMove)
+      window.removeEventListener('touchend', onTouchEnd)
+      window.removeEventListener('touchcancel', onTouchEnd)
+      window.removeEventListener('deviceorientation', onTilt)
+      window.removeEventListener('blur', onLeave)
       window.removeEventListener('resize', sizeCanvas)
       ro.disconnect()
       io.disconnect()
@@ -347,7 +424,7 @@ export default function AriaHero({ active = true }) {
       readyRef.current = false
       setReady(false)
     }
-  }, [interactive])
+  }, [interactive, mode])
 
   // ── Reveal choreography: start typing + fade pills once the F has engulfed ───
   const [armed, setArmed] = useState(false)
@@ -471,7 +548,7 @@ export default function AriaHero({ active = true }) {
               <Link
                 key={p.label}
                 to={p.to}
-                className="mx-[0.2em] mb-[0.4em] inline-flex items-center justify-center whitespace-nowrap rounded-pill border border-white/15 bg-white px-4 py-[0.42em] text-[13px] font-medium text-ink transition-colors duration-200 hover:bg-ink hover:text-white sm:px-5 sm:text-[15px]"
+                className="mx-[0.2em] mb-[0.4em] inline-flex items-center justify-center whitespace-nowrap rounded-pill border border-white/15 bg-white px-4 py-[0.42em] text-[13px] font-medium text-ink transition-colors duration-200 hover:bg-ink hover:text-white max-sm:min-h-[44px] sm:px-5 sm:text-[15px]"
               >
                 {p.label}
               </Link>
@@ -480,7 +557,7 @@ export default function AriaHero({ active = true }) {
             <button
               type="button"
               onClick={copyEmail}
-              className="mx-[0.2em] mb-[0.4em] inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-pill border border-white bg-transparent px-4 py-[0.42em] text-[13px] font-medium text-white transition-colors duration-200 hover:bg-white hover:text-ink sm:gap-3 sm:px-5 sm:text-[15px]"
+              className="mx-[0.2em] mb-[0.4em] inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-pill border border-white bg-transparent px-4 py-[0.42em] text-[13px] font-medium text-white transition-colors duration-200 hover:bg-white hover:text-ink max-sm:min-h-[44px] sm:gap-3 sm:px-5 sm:text-[15px]"
             >
               <span>
                 Reach us:{' '}

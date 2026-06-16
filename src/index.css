@@ -49,7 +49,10 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
-    scroll-behavior: smooth;
+    /* Smooth scrolling is owned by Lenis (see src/App.jsx). A native
+       `scroll-behavior: smooth` here races Lenis on programmatic scrolls
+       (anchor jumps, route-change ScrollToTop) and forces sync style
+       recalcs in WebKit — so it's intentionally omitted. */
   }
 
   body {

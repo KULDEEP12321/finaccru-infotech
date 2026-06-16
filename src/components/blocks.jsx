@@ -30,7 +30,7 @@ export function PageHero({ eyebrow, title, lead, children, surface = 'parchment'
     <section className={bg}>
       <Container className="py-24 text-center sm:py-36">
         {eyebrow && <Eyebrow className="mb-5">{eyebrow}</Eyebrow>}
-        <h1 className="display-caps mx-auto max-w-4xl text-[44px] text-ink sm:text-[68px]">
+        <h1 className="display-caps mx-auto max-w-4xl text-[clamp(30px,11vw,44px)] text-ink sm:text-[68px]">
           {title}
         </h1>
         {lead && (
@@ -77,7 +77,7 @@ export function StatRow({ stats, onDark = false }) {
             {s.value}
           </div>
           <div
-            className={`label-caps mt-3 text-[11px] tracking-[0.14em] ${
+            className={`label-caps mt-3 text-[12px] tracking-[0.14em] sm:text-[11px] ${
               onDark ? 'text-bodymuted' : 'text-ink-muted48'
             }`}
           >

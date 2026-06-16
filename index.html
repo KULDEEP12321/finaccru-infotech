@@ -11,6 +11,14 @@
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- The Helvetica Now / Mazzard webfonts are @imported from this CDN in
+         index.css; opening the connection early shaves a round-trip off the
+         (otherwise late-discovered) font fetch. -->
+    <link rel="preconnect" href="https://db.onlinewebfonts.com" crossorigin />
+    <!-- First hero pixel: the AriaHero poster shown through the F window. It's
+         a CSS background-image (discovered late), so preload it to start the
+         fetch sooner. -->
+    <link rel="preload" as="image" href="/finn/frame-018.webp" />
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Jost:wght@400;500;600;700&display=swap"
       rel="stylesheet"
