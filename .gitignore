@@ -19,6 +19,8 @@ workgrid-effect-ours.webm
 src/routeTree.gen.ts
 .wrangler
 .tanstack
+.output
+.vercel
 worker-configuration.d.ts
 
 # reference codebase (third-party, not part of this project)
