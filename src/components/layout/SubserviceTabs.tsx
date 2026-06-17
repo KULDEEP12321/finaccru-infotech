@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
 import { Link } from '@tanstack/react-router'
 import { Icon } from '@/components/ui/Icons'
@@ -32,27 +32,13 @@ const COOL_GLOW =
 
 const EASE = [0.28, 0.11, 0.32, 1] as const
 
-function usePrefersReducedMotion() {
-  const [reduced, setReduced] = useState(false)
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
-    const sync = () => setReduced(mq.matches)
-    sync()
-    mq.addEventListener('change', sync)
-    return () => mq.removeEventListener('change', sync)
-  }, [])
-  return reduced
-}
-
 // One crossfading content layer: floating frosted tile + icon, title, tech pills.
 function Visual({
   item,
   num,
-  reduced,
 }: {
   item: Subservice
   num: string
-  reduced: boolean
 }) {
   return (
     <motion.div
@@ -65,7 +51,7 @@ function Visual({
       <motion.span
         className="grid h-20 w-20 place-items-center rounded-[22px] bg-white/[0.13] text-white ring-1 ring-white/30 backdrop-blur-md max-sm:h-16 max-sm:w-16"
         style={{ boxShadow: '0 10px 34px rgba(5,15,34,0.45)' }}
-        animate={reduced ? undefined : { y: [0, -7, 0] }}
+        animate={{ y: [0, -7, 0] }}
         transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
       >
         <Icon name={item.icon} size={34} />
@@ -97,7 +83,6 @@ function Visual({
 
 export default function SubserviceTabs({ items }: { items: Subservice[] }) {
   const [active, setActive] = useState(0)
-  const reduced = usePrefersReducedMotion()
   const item = items[active] ?? items[0]
   const num = String(active + 1).padStart(2, '0')
 
@@ -173,7 +158,7 @@ export default function SubserviceTabs({ items }: { items: Subservice[] }) {
             aria-hidden
             className="pointer-events-none absolute -left-[15%] -top-[18%] h-[75%] w-[75%] rounded-full blur-2xl"
             style={{ backgroundImage: COOL_GLOW }}
-            animate={reduced ? undefined : { opacity: [0.45, 0.7, 0.45], scale: [1, 1.08, 1] }}
+            animate={{ opacity: [0.45, 0.7, 0.45], scale: [1, 1.08, 1] }}
             transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut' }}
           />
           {/* warm cream glow behind the tile — the Imprint Core signature (pulses) */}
@@ -181,12 +166,12 @@ export default function SubserviceTabs({ items }: { items: Subservice[] }) {
             aria-hidden
             className="pointer-events-none absolute left-1/2 top-[40%] h-[62%] w-[62%] -translate-x-1/2 -translate-y-1/2 rounded-full blur-2xl"
             style={{ backgroundImage: WARM_GLOW }}
-            animate={reduced ? undefined : { opacity: [0.55, 0.9, 0.55], scale: [0.9, 1.12, 0.9] }}
+            animate={{ opacity: [0.55, 0.9, 0.55], scale: [0.9, 1.12, 0.9] }}
             transition={{ duration: 6.5, repeat: Infinity, ease: 'easeInOut' }}
           />
 
           <AnimatePresence>
-            <Visual key={active} item={item} num={num} reduced={reduced} />
+            <Visual key={active} item={item} num={num} />
           </AnimatePresence>
         </div>
       </div>

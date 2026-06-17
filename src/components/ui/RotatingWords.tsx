@@ -10,22 +10,11 @@ import { AnimatePresence, motion } from 'motion/react'
 // stable width/height, and the visible word is absolutely positioned on top of
 // it inside an overflow-hidden mask — so the line never jumps as words swap.
 //
-// Respects prefers-reduced-motion: renders the first word statically with no
-// timer and no animation.
+// The rotation runs for EVERYONE — it's a small, GPU-cheap transform that we
+// intentionally keep on even under power-saving / battery-saver / reduced-motion
+// so the headline reads the same on every device.
 
 const EASE = [0.28, 0.11, 0.32, 1] as const
-
-function usePrefersReducedMotion() {
-  const [reduced, setReduced] = useState(false)
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
-    const sync = () => setReduced(mq.matches)
-    sync()
-    mq.addEventListener('change', sync)
-    return () => mq.removeEventListener('change', sync)
-  }, [])
-  return reduced
-}
 
 export function RotatingWords({
   words,
@@ -37,20 +26,15 @@ export function RotatingWords({
   className?: string
 }) {
   const [i, setI] = useState(0)
-  const reduced = usePrefersReducedMotion()
 
   useEffect(() => {
-    if (reduced || words.length < 2) return
+    if (words.length < 2) return
     const id = setInterval(() => setI((n) => (n + 1) % words.length), interval)
     return () => clearInterval(id)
-  }, [reduced, words.length, interval])
+  }, [words.length, interval])
 
   // widest word by character count — reserves a stable box so nothing reflows
   const longest = words.reduce((a, b) => (b.length > a.length ? b : a), words[0] ?? '')
-
-  if (reduced) {
-    return <span className={className}>{words[0]}</span>
-  }
 
   return (
     <span className="relative inline-flex overflow-hidden align-bottom leading-[1.1]">

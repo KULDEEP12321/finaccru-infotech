@@ -48,10 +48,16 @@ const TILT_DEADZONE = 0.6 // frame-units; a smaller tilt change is ignored so a 
 //   'fine'  → precise hovering pointer (mouse): scrub follows the cursor; eager preload.
 //   'touch' → coarse pointer (phone/tablet): scrub follows a finger drag + device tilt;
 //             the ~2MB frame preload is deferred until the scene is reached (active).
-//   'none'  → reduced-motion: the static poster only (no canvas / preload / rAF).
+//   'none'  → the static poster only (no canvas / preload / rAF).
 const pointerMode = () => {
   if (typeof window === 'undefined' || !window.matchMedia) return 'none'
-  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return 'none'
+  // Battery-saver / low-power mode trips prefers-reduced-motion even on capable
+  // phones, which used to silently drop FINN to a static poster. We keep the
+  // interactive scene on for power-saving users too, and only fall back to the
+  // poster when the *hardware* genuinely can't keep up — so the scrub stays
+  // smooth on weak devices without hiding the effect from everyone else. (FINN's
+  // motion is user-driven — cursor / finger / tilt — so it never auto-animates.)
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches && lowEndDevice()) return 'none'
   const fine =
     window.matchMedia('(any-pointer: fine)').matches &&
     window.matchMedia('(any-hover: hover)').matches

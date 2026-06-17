@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { Link } from '@tanstack/react-router'
 import { Icon } from '@/components/ui/Icons'
 import { Reveal } from '@/components/ui/Reveal'
@@ -15,77 +15,85 @@ import type { Subservice } from '@/data/site'
 // icon, title, description, optional tech pills, and a "Learn more" link.
 //
 // The hero is the pre-rendered, seamless pad video (navy field, dot texture and
-// vignette baked into the clip); under reduced-motion it falls back to the still
-// poster. Only one hardware-decoded clip plays, and only while on screen, so the
-// GPU cost is ~zero and the scroll stays smooth.
+// vignette baked into the clip). It plays for EVERYONE — including low-power /
+// battery-saver / reduced-motion / low-end devices: the `autoPlay` attribute is
+// silently ignored by power-saving browsers (iOS Low Power Mode, battery-saver
+// Chrome), so we kick playback from JS and retry. The still poster always sits
+// behind, so the tile is never blank while the clip buffers. Only one hardware-
+// decoded clip plays, and only while on screen (IntersectionObserver pause/
+// resume), so the GPU cost is ~zero and the scroll stays smooth.
 
 const PAD_WEBM = '/video/showcase-pad.webm'
 const PAD_MP4 = '/video/showcase-pad.mp4'
 const PAD_POSTER = '/video/showcase-pad-poster.webp'
 
-function usePrefersReducedMotion() {
-  const [reduced, setReduced] = useState(false)
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
-    const sync = () => setReduced(mq.matches)
-    sync()
-    mq.addEventListener('change', sync)
-    return () => mq.removeEventListener('change', sync)
-  }, [])
-  return reduced
-}
-
-// The single hero pad. Reduced-motion shows the still poster; otherwise the baked
-// loop plays, but only while it's on screen (IntersectionObserver pause/resume).
-function HeroPad({ reduced }: { reduced: boolean }) {
+// The single hero pad. The baked loop plays everywhere; it's only paused while
+// off screen so an idle clip never burns the GPU.
+function HeroPad() {
   const wrapRef = useRef<HTMLDivElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
 
   useEffect(() => {
-    if (reduced) return
     const wrap = wrapRef.current
     const v = videoRef.current
     if (!wrap || !v) return
 
+    // Force autoplay everywhere. IntersectionObserver gates playback to on-screen
+    // only (perf); on top of that we re-kick play() whenever the clip becomes
+    // playable, on the first user gesture, and when the tab regains focus — the
+    // states under which power-saving browsers will finally honor a play() call.
+    let onScreen = true
+    const tryPlay = () => {
+      if (onScreen) void v.play().catch(() => {})
+    }
+
     const io = new IntersectionObserver(
       ([entry]) => {
-        if (entry.isIntersecting) void v.play().catch(() => {})
+        onScreen = entry.isIntersecting
+        if (onScreen) tryPlay()
         else v.pause()
       },
       { threshold: 0.05 },
     )
     io.observe(wrap)
-    return () => io.disconnect()
-  }, [reduced])
+
+    const onInteract = () => tryPlay()
+    const onVisible = () => {
+      if (!document.hidden) tryPlay()
+    }
+    const events = ['touchstart', 'pointerdown', 'click', 'scroll', 'keydown']
+    events.forEach((e) => window.addEventListener(e, onInteract, { passive: true }))
+    document.addEventListener('visibilitychange', onVisible)
+    v.addEventListener('canplay', tryPlay)
+    tryPlay()
+
+    return () => {
+      io.disconnect()
+      events.forEach((e) => window.removeEventListener(e, onInteract))
+      document.removeEventListener('visibilitychange', onVisible)
+      v.removeEventListener('canplay', tryPlay)
+    }
+  }, [])
 
   return (
     <div
       ref={wrapRef}
       className="relative mx-auto aspect-[4/3] w-full max-w-[600px] overflow-hidden rounded-[18px] bg-[#0c2147] shadow-[0_30px_80px_-34px_rgba(12,33,71,0.55)] ring-1 ring-black/5 sm:aspect-[16/11]"
     >
-      {reduced ? (
-        <img
-          src={PAD_POSTER}
-          alt=""
-          aria-hidden
-          className="absolute inset-0 h-full w-full object-cover"
-        />
-      ) : (
-        <video
-          ref={videoRef}
-          className="absolute inset-0 h-full w-full object-cover"
-          poster={PAD_POSTER}
-          muted
-          loop
-          playsInline
-          autoPlay
-          preload="metadata"
-          aria-hidden
-        >
-          <source src={PAD_WEBM} type="video/webm" />
-          <source src={PAD_MP4} type="video/mp4" />
-        </video>
-      )}
+      <video
+        ref={videoRef}
+        className="absolute inset-0 h-full w-full object-cover"
+        poster={PAD_POSTER}
+        muted
+        loop
+        playsInline
+        autoPlay
+        preload="metadata"
+        aria-hidden
+      >
+        <source src={PAD_WEBM} type="video/webm" />
+        <source src={PAD_MP4} type="video/mp4" />
+      </video>
     </div>
   )
 }
@@ -143,12 +151,10 @@ function SubserviceCard({ item, index }: { item: Subservice; index: number }) {
 }
 
 export default function SubserviceShowcase({ items }: { items: Subservice[] }) {
-  const reduced = usePrefersReducedMotion()
-
   return (
     <div>
       <Reveal y={26}>
-        <HeroPad reduced={reduced} />
+        <HeroPad />
       </Reveal>
 
       <div className="mt-16 grid gap-5 sm:mt-20 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">

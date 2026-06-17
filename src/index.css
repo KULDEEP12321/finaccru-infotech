@@ -141,12 +141,6 @@
   .marquee-pause:hover .animate-marquee {
     animation-play-state: paused;
   }
-
-  @media (prefers-reduced-motion: reduce) {
-    .animate-marquee {
-      animation: none;
-    }
-  }
 }
 
 /* The "Imprint Core" pad is now a pre-rendered looping <video> (see
