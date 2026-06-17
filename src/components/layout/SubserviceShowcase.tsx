@@ -1,121 +1,125 @@
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from '@tanstack/react-router'
-import { motion, useScroll, useTransform, useReducedMotion } from 'motion/react'
 import { Icon } from '@/components/ui/Icons'
 import { Reveal } from '@/components/ui/Reveal'
-import { cn } from '@/lib/cn'
 import type { Subservice } from '@/data/site'
 
-// SubserviceShowcase — alternating image+copy "feature rows" (the Imprint Core
-// pattern: a large visual on one side, headline + description + "Learn more" on
-// the other, flipping sides each row). It replaces the old 3-up card grid.
+// SubserviceShowcase — the brand "Imprint Core" pad shown ONCE as a hero
+// showpiece, followed by a compact card grid of every sub-service.
 //
-// We have no per-subservice product photography, so the "image" is a brand
-// gradient "device" panel — a deep-blue/navy field (the system's single accent
-// family) with a soft sky glow, a faint dot texture, and a frosted tile holding
-// the service glyph. The panel drifts with a gentle scroll parallax (disabled
-// under prefers-reduced-motion), echoing the reference's product render.
+// This previously rendered one full-height alternating row per sub-service, each
+// playing the *same* baked pad clip — so on a 6–8 item category the identical
+// pad filled most of the page and read as copy-paste. Now the pad earns its keep
+// as a single hero (the reference, imprint.co, likewise shows the Core object
+// once, not per feature), and the sub-services live in a scannable grid below:
+// icon, title, description, optional tech pills, and a "Learn more" link.
 //
-// Layout: a 2-col grid at lg (visual ~half, copy ~half) with a generous gutter;
-// below lg every row stacks visual-over-copy. Sides alternate via lg:order only,
-// so the DOM order (visual first) — and therefore the mobile stack — is stable.
+// The hero is the pre-rendered, seamless pad video (navy field, dot texture and
+// vignette baked into the clip); under reduced-motion it falls back to the still
+// poster. Only one hardware-decoded clip plays, and only while on screen, so the
+// GPU cost is ~zero and the scroll stays smooth.
 
-// The exact gradient baked into Imprint's "Imprint Core" object video, rebuilt
-// in CSS from sampled corners (TL #74abdd bright blue, TR #030d23 near-black
-// navy, BL #edf1f7 near-white, BR #3b4d74 slate): a diagonal dark→light field
-// (top-right → bottom-left) plus a bright-blue glow in the upper-left.
-const OBJECT_GRADIENT =
-  'radial-gradient(100% 95% at 14% 16%, rgba(120,176,222,0.92) 0%, rgba(120,176,222,0) 46%),' +
-  'linear-gradient(218deg, #020b1f 0%, #0c2147 24%, #2a4670 46%, #44679a 60%, #84aed7 76%, #cfe1f3 90%, #edf1f7 100%)'
+const PAD_WEBM = '/video/showcase-pad.webm'
+const PAD_MP4 = '/video/showcase-pad.mp4'
+const PAD_POSTER = '/video/showcase-pad-poster.webp'
 
-// Warm peach glow inside the pad (its interior dots sampled ~#ffebe2).
-const WARM_GLOW =
-  'radial-gradient(46% 42% at 50% 50%, rgba(255,214,188,0.50) 0%, rgba(255,214,188,0) 72%)'
+function usePrefersReducedMotion() {
+  const [reduced, setReduced] = useState(false)
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const sync = () => setReduced(mq.matches)
+    sync()
+    mq.addEventListener('change', sync)
+    return () => mq.removeEventListener('change', sync)
+  }, [])
+  return reduced
+}
 
-// The "Imprint Core" wordmark colours, sampled left→right across the letters:
-// sage #a9c2c2 → tan #adac96 → taupe #a08b7a → rosy-brown #8a5d53. Reused as a
-// background-clip:text gradient on every row heading.
-export const WORDMARK_GRADIENT =
-  'linear-gradient(95deg, #a9c2c2 0%, #abbab3 16%, #adac96 34%, #a08b7a 54%, #946e62 76%, #8a5d53 100%)'
+// The single hero pad. Reduced-motion shows the still poster; otherwise the baked
+// loop plays, but only while it's on screen (IntersectionObserver pause/resume).
+function HeroPad({ reduced }: { reduced: boolean }) {
+  const wrapRef = useRef<HTMLDivElement>(null)
+  const videoRef = useRef<HTMLVideoElement>(null)
 
-function Panel({ icon, num }: { icon: string; num: string }) {
-  const ref = useRef<HTMLDivElement>(null)
-  const reduce = useReducedMotion()
-  // Drift the inner artwork as the panel crosses the viewport (start→end pass).
-  const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] })
-  const y = useTransform(scrollYProgress, [0, 1], reduce ? ['0%', '0%'] : ['-7%', '7%'])
+  useEffect(() => {
+    if (reduced) return
+    const wrap = wrapRef.current
+    const v = videoRef.current
+    if (!wrap || !v) return
+
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) void v.play().catch(() => {})
+        else v.pause()
+      },
+      { threshold: 0.05 },
+    )
+    io.observe(wrap)
+    return () => io.disconnect()
+  }, [reduced])
 
   return (
     <div
-      ref={ref}
-      className="group/panel relative aspect-[4/3] w-full overflow-hidden rounded-lg ring-1 ring-black/5 sm:aspect-square"
-      style={{ background: OBJECT_GRADIENT }}
+      ref={wrapRef}
+      className="relative mx-auto aspect-[4/3] w-full max-w-[600px] overflow-hidden rounded-[18px] bg-[#0c2147] shadow-[0_30px_80px_-34px_rgba(12,33,71,0.55)] ring-1 ring-black/5 sm:aspect-[16/11]"
     >
-      {/* warm peach glow — the light cast by the pad's interior dots */}
-      <div className="pointer-events-none absolute inset-0" style={{ background: WARM_GLOW }} />
-      {/* faint dot texture, fading toward the edges */}
-      <div
-        className="pointer-events-none absolute inset-0 opacity-[0.5]"
-        style={{
-          backgroundImage: 'radial-gradient(rgba(255,255,255,0.10) 1px, transparent 1.4px)',
-          backgroundSize: '22px 22px',
-          maskImage: 'radial-gradient(80% 80% at 50% 50%, #000 30%, transparent 78%)',
-          WebkitMaskImage: 'radial-gradient(80% 80% at 50% 50%, #000 30%, transparent 78%)',
-        }}
-      />
-      {/* parallax artwork: a frosted tile holding the service glyph */}
-      <motion.div style={{ y }} className="absolute inset-0 grid place-items-center">
-        <span className="grid h-[clamp(88px,18vw,116px)] w-[clamp(88px,18vw,116px)] place-items-center rounded-lg bg-white/10 ring-1 ring-white/15 backdrop-blur-sm transition-transform duration-500 ease-apple group-hover/panel:scale-[1.06]">
-          <Icon name={icon} size={48} className="text-white" />
-        </span>
-      </motion.div>
-      {/* bottom vignette for depth */}
-      <div
-        className="pointer-events-none absolute inset-0"
-        style={{ background: 'linear-gradient(180deg, transparent 55%, rgba(0,0,0,0.28) 100%)' }}
-      />
-      {/* corner index */}
-      <span className="absolute left-5 top-4 font-display text-[12px] font-medium tracking-[0.18em] text-white/45">
-        {num}
-      </span>
+      {reduced ? (
+        <img
+          src={PAD_POSTER}
+          alt=""
+          aria-hidden
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      ) : (
+        <video
+          ref={videoRef}
+          className="absolute inset-0 h-full w-full object-cover"
+          poster={PAD_POSTER}
+          muted
+          loop
+          playsInline
+          autoPlay
+          preload="metadata"
+          aria-hidden
+        >
+          <source src={PAD_WEBM} type="video/webm" />
+          <source src={PAD_MP4} type="video/mp4" />
+        </video>
+      )}
     </div>
   )
 }
 
-function ShowcaseRow({ item, index }: { item: Subservice; index: number }) {
-  const flip = index % 2 === 1
+// One sub-service card. The whole card is the "Learn more" link (→ /contact),
+// matching the old per-row CTA; the icon tile fills with brand blue on hover.
+function SubserviceCard({ item, index }: { item: Subservice; index: number }) {
   const num = String(index + 1).padStart(2, '0')
-  return (
-    <div className="grid items-center gap-9 sm:gap-12 lg:grid-cols-2 lg:gap-16 xl:gap-20">
-      {/* ── Visual (always first in DOM → sits on top when stacked on mobile) ── */}
-      <Reveal y={26} className={cn(flip && 'lg:order-2')}>
-        <Panel icon={item.icon} num={num} />
-      </Reveal>
 
-      {/* ── Copy ──────────────────────────────────────────────────────────── */}
-      <Reveal y={26} delay={0.08} className={cn(flip && 'lg:order-1')}>
-        <p className="font-display text-[13px] tracking-[0.06em] text-ink-muted48">//&nbsp;{num}</p>
-        {/* heading wears the sampled "Imprint Core" wordmark gradient (sage→brown) */}
-        <h3
-          className="display-caps mt-4 w-fit text-[clamp(26px,5.6vw,38px)]"
-          style={{
-            backgroundImage: WORDMARK_GRADIENT,
-            WebkitBackgroundClip: 'text',
-            backgroundClip: 'text',
-            color: 'transparent',
-            WebkitTextFillColor: 'transparent',
-          }}
-        >
-          {item.title}
-        </h3>
-        <p className="mt-5 max-w-md text-body-lg text-ink-muted80">{item.desc}</p>
+  return (
+    <Reveal delay={(index % 3) * 0.06} y={18} className="h-full">
+      <Link
+        to="/contact"
+        aria-label={`Learn more about ${item.title}`}
+        className="group flex h-full flex-col rounded-[16px] border border-hairline bg-pearl/50 p-6 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/25 hover:bg-parchment/70 hover:shadow-[0_18px_44px_-26px_rgba(12,33,71,0.45)] sm:p-7"
+      >
+        <div className="flex items-start justify-between">
+          <span className="grid h-12 w-12 place-items-center rounded-[13px] bg-white text-primary ring-1 ring-black/[0.06] transition-colors duration-300 group-hover:bg-primary group-hover:text-white">
+            <Icon name={item.icon} size={24} />
+          </span>
+          <span className="font-display text-[12px] font-medium tracking-[0.16em] text-ink-muted48">
+            {num}
+          </span>
+        </div>
+
+        <h3 className="display-caps mt-5 text-[20px] leading-tight text-ink">{item.title}</h3>
+        <p className="mt-2.5 text-caption leading-relaxed text-ink-muted80">{item.desc}</p>
 
         {item.tech && (
-          <div className="mt-6 flex flex-wrap gap-2">
+          <div className="mt-4 flex flex-wrap gap-1.5">
             {item.tech.map((t) => (
               <span
                 key={t}
-                className="rounded-pill border border-hairline bg-pearl px-2.5 py-1 text-fine text-ink-muted48"
+                className="rounded-pill border border-hairline bg-white/60 px-2.5 py-1 text-fine text-ink-muted48"
               >
                 {t}
               </span>
@@ -123,31 +127,35 @@ function ShowcaseRow({ item, index }: { item: Subservice; index: number }) {
           </div>
         )}
 
-        <Link
-          to="/contact"
-          aria-label={`Learn more about ${item.title}`}
-          className="group/link mt-7 inline-flex items-center gap-1.5 text-body-lg font-medium text-primary"
-        >
-          <span className="border-b border-primary/35 pb-0.5 transition-colors group-hover/link:border-primary">
+        <span className="mt-auto inline-flex items-center gap-1.5 pt-6 text-caption font-medium text-primary">
+          <span className="border-b border-primary/35 pb-0.5 transition-colors group-hover:border-primary">
             Learn more
           </span>
           <Icon
             name="arrow"
-            size={17}
-            className="transition-transform duration-300 ease-apple group-hover/link:translate-x-1"
+            size={16}
+            className="transition-transform duration-300 ease-apple group-hover:translate-x-1"
           />
-        </Link>
-      </Reveal>
-    </div>
+        </span>
+      </Link>
+    </Reveal>
   )
 }
 
 export default function SubserviceShowcase({ items }: { items: Subservice[] }) {
+  const reduced = usePrefersReducedMotion()
+
   return (
-    <div className="space-y-16 sm:space-y-24 lg:space-y-28">
-      {items.map((item, i) => (
-        <ShowcaseRow key={item.title} item={item} index={i} />
-      ))}
+    <div>
+      <Reveal y={26}>
+        <HeroPad reduced={reduced} />
+      </Reveal>
+
+      <div className="mt-16 grid gap-5 sm:mt-20 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
+        {items.map((item, i) => (
+          <SubserviceCard key={item.title} item={item} index={i} />
+        ))}
+      </div>
     </div>
   )
 }

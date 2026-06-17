@@ -148,3 +148,7 @@
     }
   }
 }
+
+/* The "Imprint Core" pad is now a pre-rendered looping <video> (see
+   SubserviceShowcase) — the old CSS-3D .finn-* pad and its keyframes were
+   removed when we swapped live rendering for the baked clip. */
