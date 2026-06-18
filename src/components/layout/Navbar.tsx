@@ -20,7 +20,7 @@ export default function Navbar() {
       <Container className="flex h-[68px] items-center justify-between gap-6">
         <Logo />
 
-        <nav className="hidden items-center gap-8 md:flex">
+        <nav className="hidden items-center gap-8 lg:flex">
           {nav.map((item) =>
             item.to === '/services' ? (
               <ServicesMega key={item.to} linkBase={linkBase} />
@@ -37,14 +37,14 @@ export default function Navbar() {
               </Link>
             )
           )}
-          <Button to="/contact" className="!px-5 !py-2.5 !text-[13px]">
+          <Button to="/contact" className="whitespace-nowrap !px-5 !py-2.5 !text-[13px]">
             Get started
           </Button>
         </nav>
 
-        {/* Mobile toggle */}
+        {/* Mobile + tablet toggle (full nav only has comfortable room at lg+) */}
         <button
-          className="press grid h-10 w-10 place-items-center text-ink md:hidden"
+          className="press grid h-10 w-10 place-items-center text-ink lg:hidden"
           onClick={() => setOpen((v) => !v)}
           aria-label="Toggle menu"
           aria-expanded={open}
@@ -53,9 +53,9 @@ export default function Navbar() {
         </button>
       </Container>
 
-      {/* Mobile tray */}
+      {/* Mobile + tablet tray */}
       {open && (
-        <div className="border-t border-black/[0.06] bg-canvas/95 backdrop-blur-xl md:hidden">
+        <div className="border-t border-black/[0.06] bg-canvas/95 backdrop-blur-xl lg:hidden">
           <Container className="flex flex-col py-4">
             {nav.map((item) => (
               <div key={item.to} className="contents">

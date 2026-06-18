@@ -21,10 +21,10 @@ export default function Footer() {
               <h4 className="label-caps text-[12px] tracking-[0.14em] text-ink">{col.heading}</h4>
               <ul className="mt-2">
                 {col.links.map((link) => (
-                  <li key={link.label} className="leading-[2.41] max-sm:flex max-sm:min-h-[44px] max-sm:items-center">
+                  <li key={link.label} className="leading-[2.41]">
                     <Link
                       to={link.to}
-                      className="text-body-lg text-ink-muted80 transition-colors hover:text-primary"
+                      className="text-body-lg text-ink-muted80 transition-colors hover:text-primary max-sm:flex max-sm:min-h-[44px] max-sm:items-center"
                     >
                       {link.label}
                     </Link>
