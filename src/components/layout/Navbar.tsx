@@ -3,7 +3,8 @@ import { Link, useLocation } from '@tanstack/react-router'
 import { Container, Button, Logo } from '@/components/ui/primitives'
 import { Icon } from '@/components/ui/Icons'
 import ServicesMega from '@/components/layout/ServicesMega'
-import { nav, serviceCategories } from '@/data/site'
+import { siteContent } from '@/lib/site-content'
+const { nav, serviceCategories } = siteContent
 
 // Podium-clean nav: one row, white, generous air, uppercase geometric links,
 // a single blue accent ("Get started"). No utility bar, no chrome.

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from '@tanstack/react-router'
-import { company } from '@/data/site'
+import { siteContent } from '@/lib/site-content'
+const { company } = siteContent
 
 // AriaHero — the cinematic scene revealed once you've zoomed THROUGH the F.
 //

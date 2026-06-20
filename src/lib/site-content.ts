@@ -1,5 +1,14 @@
 // Single source of truth for site copy and structured content.
-// Keep marketing copy here; components stay presentational.
+//
+// Every page section is reachable from the one typed `siteContent` object
+// exported at the foot of this file (mirrors the reference site-content
+// architecture: page sections as one typed object). Components stay
+// presentational and destructure the slice they need:
+//   import { siteContent } from '@/lib/site-content'
+//   const { services } = siteContent
+// The interfaces below remain the typed contracts (imported directly where a
+// component is generic over one, e.g. ServiceCard/StatRow/SubserviceList).
+// Identity + SEO live separately in src/lib/site-config.ts.
 
 // ── Shared content types ───────────────────────────────────────────────
 export interface NavItem {
@@ -87,7 +96,7 @@ export interface FooterColumn {
   links: NavItem[]
 }
 
-export const company: Company = {
+const company: Company = {
   name: 'Finaccru Infotech',
   short: 'Finaccru',
   tagline: 'Software that moves business forward.',
@@ -97,22 +106,23 @@ export const company: Company = {
   founded: 2016,
 }
 
-export const nav: NavItem[] = [
+const nav: NavItem[] = [
   { label: 'Home', to: '/' },
   { label: 'Services', to: '/services' },
   { label: 'Pricing', to: '/pricing' },
+  { label: 'Blog', to: '/blog' },
   { label: 'About', to: '/about' },
   { label: 'Contact', to: '/contact' },
 ]
 
-export const utilityNav: NavItem[] = [
+const utilityNav: NavItem[] = [
   { label: 'Careers', to: '/about' },
   { label: 'Support', to: '/contact' },
   { label: 'Client Login', to: '/contact' },
 ]
 
 // Home + Services share this list. `long` is used on the Services page detail tiles.
-export const services: Service[] = [
+const services: Service[] = [
   {
     id: 'software',
     name: 'Custom Software',
@@ -178,7 +188,7 @@ export const services: Service[] = [
 // ── Specialized practices ────────────────────────────────────────────────
 // Deeper, sub-service-rich offerings (catalogue ported from ProTech Planner).
 // Each renders a dedicated detail page at /services/<slug> via ServiceCategory.
-export const serviceCategories: ServiceCategory[] = [
+const serviceCategories: ServiceCategory[] = [
   {
     slug: 'ai-ml-development',
     name: 'AI and ML Development',
@@ -311,14 +321,14 @@ export const serviceCategories: ServiceCategory[] = [
   },
 ]
 
-export const stats: Stat[] = [
+const stats: Stat[] = [
   { value: '200+', label: 'Products shipped' },
   { value: '60+', label: 'Clients worldwide' },
   { value: '99.98%', label: 'Platform uptime' },
   { value: '8 yrs', label: 'Engineering at scale' },
 ]
 
-export const process: ProcessStep[] = [
+const process: ProcessStep[] = [
   {
     step: '01',
     title: 'Discover',
@@ -341,12 +351,12 @@ export const process: ProcessStep[] = [
   },
 ]
 
-export const techStack: string[] = [
+const techStack: string[] = [
   'TypeScript', 'React', 'Node.js', 'Python', 'Go', 'PostgreSQL',
   'AWS', 'Kubernetes', 'Terraform', 'React Native', 'GraphQL', 'Kafka',
 ]
 
-export const values: Value[] = [
+const values: Value[] = [
   {
     title: 'Ship to learn',
     body: 'Working software in front of real users beats a perfect plan on paper. We optimise for the next deploy.',
@@ -361,7 +371,7 @@ export const values: Value[] = [
   },
 ]
 
-export const pricing: PricingPlan[] = [
+const pricing: PricingPlan[] = [
   {
     id: 'project',
     name: 'Fixed Project',
@@ -413,7 +423,7 @@ export const pricing: PricingPlan[] = [
   },
 ]
 
-export const faqs: Faq[] = [
+const faqs: Faq[] = [
   {
     q: 'How quickly can we start?',
     a: 'Most engagements kick off within two weeks of a signed scope. Dedicated teams can sometimes start sooner if the fit is clear.',
@@ -432,13 +442,13 @@ export const faqs: Faq[] = [
   },
 ]
 
-export const offices: Office[] = [
+const offices: Office[] = [
   { city: 'Dubai', country: 'United Arab Emirates', role: 'Headquarters' },
   { city: 'Bengaluru', country: 'India', role: 'Engineering centre' },
   { city: 'London', country: 'United Kingdom', role: 'Client partnerships' },
 ]
 
-export const footerColumns: FooterColumn[] = [
+const footerColumns: FooterColumn[] = [
   {
     heading: 'Services',
     links: [
@@ -461,10 +471,40 @@ export const footerColumns: FooterColumn[] = [
   {
     heading: 'Resources',
     links: [
+      { label: 'Blog', to: '/blog' },
       { label: 'Engagement models', to: '/pricing' },
       { label: 'Our process', to: '/services' },
-      { label: 'Client login', to: '/contact' },
       { label: 'Support', to: '/contact' },
     ],
   },
 ]
+
+// ── Aggregate: the single typed content object ─────────────────────────────
+// The mirror of the reference architecture's `siteContent` — every page section
+// reachable from one typed object. The granular consts above are kept private;
+// consumers read their slice through here (`const { services } = siteContent`),
+// so there is exactly one content source of truth.
+export const siteContent = {
+  company,
+  nav,
+  utilityNav,
+  services,
+  serviceCategories,
+  stats,
+  process,
+  techStack,
+  values,
+  pricing,
+  faqs,
+  offices,
+  footerColumns,
+}
+
+/**
+ * Accent theme keys. Finaccru ships a SINGLE brand accent — Action Blue
+ * (#0066cc) — per design.md ("no second brand color exists"). This type mirrors
+ * the reference architecture's accent-theme config so additional accents can be
+ * added when a live switcher is wanted; see src/lib/theme-options.ts for the
+ * full rationale and the steps to wire one safely.
+ */
+export type AccentTheme = 'finaccru'

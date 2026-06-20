@@ -9,22 +9,48 @@ import Lenis from 'lenis'
 import Navbar from '@/components/layout/Navbar'
 import Footer from '@/components/layout/Footer'
 import NotFound from '@/components/pages/NotFound'
+import { siteConfig, absoluteUrl } from '@/lib/site-config'
+import { organizationSchema, webSiteSchema } from '@/lib/seo'
 import appCss from '../index.css?url'
+
+const ogImage = absoluteUrl(siteConfig.ogImage)
 
 export const Route = createRootRoute({
   head: () => ({
+    // Site-wide default title; per-route `head()` overrides it with a `{ title }`
+    // meta entry. Every default below is a fallback for routes that omit one.
+    title: siteConfig.defaultTitle,
     meta: [
       { charSet: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { title: 'Finaccru Infotech — Software & IT Services' },
+      { name: 'description', content: siteConfig.description },
       {
-        name: 'description',
+        name: 'keywords',
         content:
-          'Finaccru Infotech designs, builds, and runs custom software, cloud platforms, and intelligent systems for ambitious businesses.',
+          'custom software development, cloud engineering, DevOps, AI and ML development, mobile app development, cybersecurity, managed IT, Dubai software company',
       },
+      { name: 'theme-color', content: siteConfig.themeColor },
+      { name: 'robots', content: 'index, follow' },
+      // Open Graph defaults
+      { property: 'og:site_name', content: siteConfig.name },
+      { property: 'og:type', content: 'website' },
+      { property: 'og:locale', content: siteConfig.locale },
+      { property: 'og:title', content: siteConfig.defaultTitle },
+      { property: 'og:description', content: siteConfig.description },
+      { property: 'og:url', content: siteConfig.url },
+      { property: 'og:image', content: ogImage },
+      { property: 'og:image:width', content: siteConfig.ogImageWidth },
+      { property: 'og:image:height', content: siteConfig.ogImageHeight },
+      { property: 'og:image:alt', content: siteConfig.name },
+      // Twitter Card defaults
+      { name: 'twitter:card', content: 'summary_large_image' },
+      { name: 'twitter:title', content: siteConfig.defaultTitle },
+      { name: 'twitter:description', content: siteConfig.description },
+      { name: 'twitter:image', content: ogImage },
     ],
     links: [
       { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
+      { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
       { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
       { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossOrigin: 'anonymous' },
       // The Helvetica Now / Mazzard webfonts are @imported in index.css; opening
@@ -38,6 +64,8 @@ export const Route = createRootRoute({
       },
       { rel: 'stylesheet', href: appCss },
     ],
+    // Organization + WebSite knowledge-graph entries, emitted on every page.
+    scripts: [organizationSchema(), webSiteSchema()],
   }),
   shellComponent: RootDocument,
   notFoundComponent: NotFound,

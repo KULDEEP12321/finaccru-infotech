@@ -9,7 +9,8 @@ import Marquee from '@/components/ui/Marquee'
 import FreedomSection from '@/components/layout/FreedomSection'
 import PrecisionSection from '@/components/layout/PrecisionSection'
 import { Icon } from '@/components/ui/Icons'
-import { stats } from '@/data/site'
+import { siteContent } from '@/lib/site-content'
+const { stats } = siteContent
 
 export default function Home() {
   return (

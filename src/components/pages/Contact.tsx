@@ -1,7 +1,8 @@
 import { useState, type ChangeEvent, type FormEvent } from 'react'
 import { Container, Eyebrow, Button } from '@/components/ui/primitives'
 import { Icon } from '@/components/ui/Icons'
-import { services, company, offices } from '@/data/site'
+import { siteContent } from '@/lib/site-content'
+const { services, company, offices } = siteContent
 
 const field =
   'h-12 w-full rounded-pill border border-black/[0.08] bg-canvas px-5 text-body-lg text-ink placeholder:text-ink-muted48 focus:border-primary focus:outline-none'

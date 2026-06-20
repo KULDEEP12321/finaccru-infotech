@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from 'motion/react'
 import { Link } from '@tanstack/react-router'
 import { Icon } from '@/components/ui/Icons'
 import { cn } from '@/lib/cn'
-import type { Subservice } from '@/data/site'
+import type { Subservice } from '@/lib/site-content'
 
 // SubserviceTabs — the "Imprint Technology" tabbed pattern (imprint.co, the
 // "Built for impact, every step of the way." block): a row of selectable tabs

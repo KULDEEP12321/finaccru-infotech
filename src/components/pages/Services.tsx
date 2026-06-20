@@ -3,7 +3,8 @@ import { Container, Section, Eyebrow, Button } from '@/components/ui/primitives'
 import { PageHero, CTASection } from '@/components/ui/blocks'
 import { Icon } from '@/components/ui/Icons'
 import { Reveal } from '@/components/ui/Reveal'
-import { services, serviceCategories, techStack, type Service } from '@/data/site'
+import { siteContent, type Service } from '@/lib/site-content'
+const { services, serviceCategories, techStack } = siteContent
 
 function ServiceDetail({ service, index }: { service: Service; index: number }) {
   const onDark = index % 2 === 1

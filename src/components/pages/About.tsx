@@ -1,6 +1,7 @@
 import { Container, Section, Eyebrow } from '@/components/ui/primitives'
 import { CTASection, StatRow } from '@/components/ui/blocks'
-import { values, stats, offices, company } from '@/data/site'
+import { siteContent } from '@/lib/site-content'
+const { values, stats, offices, company } = siteContent
 
 export default function About() {
   return (

@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import { Link } from '@tanstack/react-router'
 import { Container, Eyebrow, Button } from '@/components/ui/primitives'
 import { Icon } from '@/components/ui/Icons'
-import type { Service, Stat } from '@/data/site'
+import type { Service, Stat } from '@/lib/site-content'
 
 // ── ServiceCard ────────────────────────────────────────────────────────
 export function ServiceCard({ service }: { service: Service }) {

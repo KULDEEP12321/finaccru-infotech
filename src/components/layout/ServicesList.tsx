@@ -3,7 +3,8 @@ import { Link } from '@tanstack/react-router'
 import { Icon } from '@/components/ui/Icons'
 import { Reveal } from '@/components/ui/Reveal'
 import { cn } from '@/lib/cn'
-import { services, type Service } from '@/data/site'
+import { siteContent, type Service } from '@/lib/site-content'
+const { services } = siteContent
 
 // ServicesList — an Armory-style "case studies" list grid for our six disciplines.
 // Each row is a ruled grid: [ media · //index · title · description · » ]. On hover

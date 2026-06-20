@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 import { Link } from '@tanstack/react-router'
 import { Icon } from '@/components/ui/Icons'
 import { Reveal } from '@/components/ui/Reveal'
-import type { Subservice } from '@/data/site'
+import type { Subservice } from '@/lib/site-content'
 
 // SubserviceShowcase — the brand "Imprint Core" pad shown ONCE as a hero
 // showpiece, followed by a compact card grid of every sub-service.

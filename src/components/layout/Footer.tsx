@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { Container, Logo } from '@/components/ui/primitives'
-import { footerColumns, company } from '@/data/site'
+import { siteContent } from '@/lib/site-content'
+const { footerColumns, company } = siteContent
 
 export default function Footer() {
   const year = 2026 // build-time constant; avoids per-render Date()

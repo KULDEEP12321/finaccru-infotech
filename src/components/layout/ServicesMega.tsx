@@ -3,7 +3,8 @@ import { Link, useLocation } from '@tanstack/react-router'
 import { AnimatePresence, motion } from 'motion/react'
 import { Icon } from '@/components/ui/Icons'
 import { Button } from '@/components/ui/primitives'
-import { serviceCategories } from '@/data/site'
+import { siteContent } from '@/lib/site-content'
+const { serviceCategories } = siteContent
 
 const EASE = [0.28, 0.11, 0.32, 1]
 

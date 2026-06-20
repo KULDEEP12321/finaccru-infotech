@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { Section, Eyebrow, Button } from '@/components/ui/primitives'
 import { PageHero, CTASection } from '@/components/ui/blocks'
 import { Icon } from '@/components/ui/Icons'
-import { pricing, faqs, type PricingPlan, type Faq } from '@/data/site'
+import { siteContent, type PricingPlan, type Faq } from '@/lib/site-content'
+const { pricing, faqs } = siteContent
 
 function PriceCard({ plan }: { plan: PricingPlan }) {
   const featured = plan.featured

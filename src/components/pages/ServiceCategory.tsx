@@ -2,8 +2,9 @@ import { Container, Section, Eyebrow, Button } from '@/components/ui/primitives'
 import { PageHero, CTASection } from '@/components/ui/blocks'
 import { Icon } from '@/components/ui/Icons'
 import { Reveal } from '@/components/ui/Reveal'
-import SubserviceShowcase from '@/components/layout/SubserviceShowcase'
-import { serviceCategories } from '@/data/site'
+import SubserviceList from '@/components/layout/SubserviceList'
+import { siteContent } from '@/lib/site-content'
+const { serviceCategories } = siteContent
 import NotFound from '@/components/pages/NotFound'
 
 export default function ServiceCategory({ slug }: { slug: string }) {
@@ -30,7 +31,7 @@ export default function ServiceCategory({ slug }: { slug: string }) {
             <p className="mt-4 text-body-lg text-ink-muted80">{cat.subLead}</p>
           )}
         </Reveal>
-        <SubserviceShowcase items={cat.subservices} />
+        <SubserviceList items={cat.subservices} />
       </Section>
 
       {/* ── Why choose us (dark) ──────────────────────────────────────── */}
