@@ -9,7 +9,8 @@
   "scripts": {
     "dev": "vite",
     "build": "node --max-old-space-size=4096 ./node_modules/vite/bin/vite.js build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "blog:generate": "node scripts/generate-post.mjs"
   },
   "dependencies": {
     "@portabletext/react": "^3.2.4",
@@ -35,13 +36,18 @@
     "three": "^0.171.0"
   },
   "devDependencies": {
+    "@anthropic-ai/sdk": "^0.105.0",
     "@cloudflare/vite-plugin": "^1.41.0",
+    "@sanity/block-tools": "^3.70.0",
+    "@sanity/schema": "^5.31.1",
     "@tanstack/router-plugin": "^1.168.18",
     "@types/node": "^22.19.21",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@types/three": "^0.171.0",
     "@vitejs/plugin-react": "^5.2.0",
+    "jsdom": "^29.1.1",
+    "marked": "^18.0.5",
     "tailwindcss": "^4.3.1",
     "typescript": "^5.9.3",
     "vite": "^7.3.5",
