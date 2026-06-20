@@ -80,10 +80,10 @@ export default function About() {
               Where we are
             </Eyebrow>
             <h2 className="display-caps text-[40px] sm:text-[48px]">
-              Three hubs, one team.
+              Two hubs, one team.
             </h2>
           </div>
-          <div className="grid gap-6 sm:grid-cols-3">
+          <div className="grid gap-6 sm:grid-cols-2">
             {offices.map((o) => (
               <div key={o.city} className="rounded-lg bg-white/[0.04] p-7 ring-1 ring-white/10">
                 <p className="text-fine uppercase tracking-[0.08em] text-primary-ondark">{o.role}</p>

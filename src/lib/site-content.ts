@@ -444,8 +444,7 @@ const faqs: Faq[] = [
 
 const offices: Office[] = [
   { city: 'Dubai', country: 'United Arab Emirates', role: 'Headquarters' },
-  { city: 'Bengaluru', country: 'India', role: 'Engineering centre' },
-  { city: 'London', country: 'United Kingdom', role: 'Client partnerships' },
+  { city: 'Noida', country: 'India', role: 'Engineering centre' },
 ]
 
 const footerColumns: FooterColumn[] = [
