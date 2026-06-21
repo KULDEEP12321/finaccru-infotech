@@ -71,6 +71,7 @@ export default function FHero() {
   const overlayRef = useRef<SVGSVGElement>(null) // the whole svg overlay (dropped at the end)
   const montageRef = useRef<HTMLDivElement>(null) // montage layer (settle + brighten)
   const copyRef = useRef<HTMLDivElement>(null) // hero copy + scroll hint (fades out first)
+  const copyTopRef = useRef<HTMLDivElement>(null) // copy block (read live for the short-viewport guard)
   const divedRef = useRef(false) // latch: have we engulfed past the reveal point?
   const pSmoothRef = useRef(0) // eased scrub progress (lags the raw scroll target)
   const firstRef = useRef(true) // snap (don't ease) on the very first frame
@@ -154,6 +155,28 @@ export default function FHero() {
             // Tablet / narrow window: copy sits bottom-left, clear of the centred F.
             targetH = COMPACT_H
             centerFrac = COMPACT_CENTER
+            // Short/landscape guard: the small centred F is a badge in the upper area;
+            // on a SHORT viewport the bottom-left copy rises into it (e.g. landscape
+            // phones, short windows). Read the copy block's ACTUAL top and, if the resting
+            // F would dip into it, shrink + lift the F into the clear band above the copy.
+            // Pure no-op when the viewport is tall enough that the F already rests above
+            // the copy → tablet/desktop byte-identical. (Wide ≥WIDE_BP never reaches here:
+            // there the big F sits to the RIGHT of the copy, so no clash.)
+            // The F's geometry is measured from the stage top, which sits NAV_H below the
+            // viewport top, so its viewport-space foot is NAV_H + centre + half-height. The
+            // copy's top is read live (viewport-space) from its actual rendered box. We then
+            // (a) shrink the F only if it no longer fits the band above the copy, and (b) lift
+            // it only as far as needed to clear that copy — both via Math.min, so when the
+            // viewport is tall enough the defaults are kept untouched (desktop/tablet identical).
+            const copyTop = copyTopRef.current
+              ? copyTopRef.current.getBoundingClientRect().top
+              : 0
+            if (copyTop > 0) {
+              const GAP = 16 // px breathing room between the F's foot and the copy
+              const band = Math.max(0, copyTop - GAP - NAV_H) // viewport room above the copy
+              targetH = Math.min(targetH, (band * 0.85) / h) // shrink only if it won't fit
+              centerFrac = Math.min(centerFrac, (band - (targetH * h) / 2) / h) // lift to clear
+            }
           }
           const base = Math.min(1, (targetH * h) / (F_H * u)) // never enlarge past native
           const rise = ((0.5 - centerFrac) * h) / u // viewBox units the F lifts upward
@@ -250,9 +273,16 @@ export default function FHero() {
     // NAV_H to the desired visible gap: mobile bottom-24 (96px → 28px gap, extra room
     // for wrapped CTAs); desktop sm:bottom-[124px] (68px navbar + 56px gap). Earlier
     // sm:bottom-14 (56px < 68px) left the "Start a project" CTA cut off at the bottom.
-    <div className="absolute bottom-24 left-6 right-6 max-w-none text-left sm:bottom-[124px] sm:left-12 sm:right-auto sm:max-w-md">
+    <div
+      ref={copyTopRef}
+      className="absolute bottom-24 left-6 right-6 max-w-none text-left sm:left-12 sm:right-auto sm:max-w-md sm:[bottom:clamp(88px,18vh,124px)] xl:[bottom:124px]"
+    >
       <Eyebrow className="mb-3">A ProtechPlanner company · Software &amp; IT</Eyebrow>
-      <h1 className="display-caps text-[26px] text-ink sm:text-[46px]">
+      {/* sm font/offset are height-aware (clamp on vh): byte-identical to 46px / 124px
+          on tall windows (≥~690px) and at ≥1280 (xl, wide layout); they shrink only on
+          short/landscape viewports so the copy fits and clears the centred F. The 88px
+          floor keeps the bottom-anchored CTAs clear of the 69px sticky-navbar overflow. */}
+      <h1 className="display-caps text-[26px] text-ink sm:text-[clamp(26px,6.6vh,46px)] xl:text-[46px]">
         We build the software your business runs on.
       </h1>
       <div className="pointer-events-auto mt-6 flex flex-wrap gap-3">
@@ -278,10 +308,18 @@ export default function FHero() {
   return (
     // Tall scroll-track; the stage inside is sticky for the scrubbed aperture dive.
     <section ref={trackRef} className="relative bg-parchment" style={{ height: '260vh' }}>
-      {/* h-[100dvh] (not h-screen/100vh): on mobile the browser chrome eats into
+      {/* top-[69px] (NAV_H), NOT top-0: the sticky navbar takes 69px of flow above
+          this section, so at scroll 0 the stage's natural position is already y=69.
+          Sticking at top-0 means it isn't pinned yet — the first 69px of scroll just
+          slides the whole stage up to 0 (the F "rises" before it zooms). Sticking at
+          top-[69px] glues it in place from the very first frame, so the F zooms
+          STRAIGHT in from rest with no upward drift. Resting look is unchanged
+          (the stage already sat at y=69), and the NAV_H overflow the copy offsets
+          below compensate for now holds throughout the dive, not just at scroll 0.
+          h-[100dvh] (not h-screen/100vh): on mobile the browser chrome eats into
           100vh, so a bottom-anchored copy block lands behind it and clips the CTAs.
           dvh tracks the VISIBLE viewport; on desktop dvh == vh (byte-identical). */}
-      <div className="sticky top-0 h-[100dvh] overflow-hidden bg-parchment">
+      <div className="sticky top-[69px] h-[100dvh] overflow-hidden bg-parchment">
         {/* 1 — the cinematic AriaHero scene, visible ONLY through the F window */}
         <div ref={montageRef} className="absolute inset-0 will-change-transform">
           <AriaHero active={dived} />

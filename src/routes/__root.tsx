@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef } from 'react'
 import {
   HeadContent,
   Scripts,
@@ -14,6 +14,12 @@ import { organizationSchema, webSiteSchema } from '@/lib/seo'
 import appCss from '../index.css?url'
 
 const ogImage = absoluteUrl(siteConfig.ogImage)
+
+// useLayoutEffect on the server is a no-op and React warns about it, so fall back
+// to useEffect during SSR. On the client we need the layout variant so the scroll
+// reset lands before the freshly-committed page paints (no flash at the old offset).
+const useIsomorphicLayoutEffect =
+  typeof window !== 'undefined' ? useLayoutEffect : useEffect
 
 export const Route = createRootRoute({
   head: () => ({
@@ -71,7 +77,13 @@ export const Route = createRootRoute({
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   const lenisRef = useRef<Lenis | null>(null)
-  const pathname = useRouterState({ select: (s) => s.location.pathname })
+  // `resolvedLocation` is the *committed* location: it only flips once the next
+  // route's loaders have finished and its component is in the DOM. `location`, by
+  // contrast, updates the instant a link is clicked — keying the scroll reset on
+  // it scrolls the still-visible outgoing page to top and parks it there while the
+  // loader runs ("scroll to top, then switch"). Keying on the resolved path means
+  // the old page never moves; we only snap the new page to top once it's mounted.
+  const pathname = useRouterState({ select: (s) => s.resolvedLocation?.pathname })
 
   useEffect(() => {
     // Podium-style buttery smooth scroll; drives every scroll-scrubbed effect.
@@ -95,10 +107,13 @@ function RootDocument({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
-  // Jump to top on route change, through Lenis if it's running.
-  useEffect(() => {
-    if (lenisRef.current) lenisRef.current.scrollTo(0, { immediate: true })
-    window.scrollTo(0, 0)
+  // Snap to top when the new route commits. A layout effect runs after the new
+  // page is in the DOM but before paint, so the reset is invisible. Lenis owns
+  // scrolling, so drive it through Lenis; fall back to native only before init.
+  useIsomorphicLayoutEffect(() => {
+    const lenis = lenisRef.current
+    if (lenis) lenis.scrollTo(0, { immediate: true })
+    else window.scrollTo(0, 0)
   }, [pathname])
 
   return (

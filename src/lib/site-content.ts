@@ -95,6 +95,24 @@ export interface FooterColumn {
   heading: string
   links: NavItem[]
 }
+export interface LegalSection {
+  heading: string
+  /** Body paragraphs rendered in order. */
+  body?: string[]
+  /** Optional bullet list rendered after the body. */
+  list?: string[]
+}
+export type LegalSlug = 'privacy' | 'terms' | 'cookies'
+export interface LegalDoc {
+  slug: LegalSlug
+  title: string
+  /** Human-readable last-revised date (build-time constant; no per-render Date()). */
+  updated: string
+  /** One-line summary for SEO meta + page lead. */
+  summary: string
+  intro: string
+  sections: LegalSection[]
+}
 
 const company: Company = {
   name: 'Finaccru Infotech',
@@ -479,6 +497,235 @@ const footerColumns: FooterColumn[] = [
   },
 ]
 
+// ── Legal documents ────────────────────────────────────────────────────────
+// Privacy, Terms, and Cookie policies rendered by the reusable LegalPage
+// component at /privacy, /terms, and /cookies. Structure mirrors the legal
+// pages ported from ProTech Planner, rewritten to fit Finaccru's software /
+// cloud / AI engagement model and UAE+India footprint. The contact block is
+// appended by the component from `company`, so email/phone stay in one place.
+const LEGAL_UPDATED = 'June 21, 2026'
+
+const legal: Record<LegalSlug, LegalDoc> = {
+  privacy: {
+    slug: 'privacy',
+    title: 'Privacy Policy',
+    updated: LEGAL_UPDATED,
+    summary:
+      'How Finaccru Infotech collects, uses, and protects your information when you visit our site or engage our services.',
+    intro:
+      'This Privacy Policy explains how Finaccru Infotech ("we", "us", "our") collects, uses, and protects information when you visit our website or engage our software, cloud, and AI services. By using our site, you agree to the practices described here.',
+    sections: [
+      {
+        heading: 'Information we collect',
+        body: ['We collect information you give us directly and information gathered automatically as you use our site:'],
+        list: [
+          'Contact details you submit — name, email, phone, and company — when you make an enquiry, request a proposal, or subscribe to updates.',
+          'Project information you share during an engagement, including requirements, documents, and any access or credentials you choose to provide.',
+          'Usage data such as pages visited, referring links, device and browser type, and approximate location, collected automatically through cookies and similar technologies.',
+        ],
+      },
+      {
+        heading: 'How we use your information',
+        list: [
+          'To respond to enquiries, prepare proposals, and deliver the services you engage us for.',
+          'To operate, secure, maintain, and improve our website and offerings.',
+          'To send service updates, security notices, and — where you have opted in — occasional news about our work.',
+          'To meet our legal, accounting, and regulatory obligations.',
+        ],
+      },
+      {
+        heading: 'Cookies and analytics',
+        body: [
+          'Our site uses cookies and similar technologies to keep it working and to understand how it is used. You can read the detail and manage your choices in our Cookie Policy.',
+        ],
+      },
+      {
+        heading: 'How we share information',
+        body: ['We do not sell or rent your personal information. We share it only where necessary:'],
+        list: [
+          'With trusted service providers — such as hosting, analytics, and email — who process data on our behalf under confidentiality obligations.',
+          'When required by law, regulation, or valid legal process.',
+          'To protect our rights, safety, and property, or those of our clients and users.',
+          'In connection with a merger, acquisition, or sale of assets, with notice where required.',
+        ],
+      },
+      {
+        heading: 'Data security',
+        body: [
+          'We apply appropriate technical and organisational measures to protect your information against unauthorised access, alteration, disclosure, or loss. No method of transmission or storage is completely secure, however, and we cannot guarantee absolute security.',
+        ],
+      },
+      {
+        heading: 'Data retention',
+        body: [
+          'We keep personal information only for as long as needed to provide our services and fulfil the purposes described here, unless a longer retention period is required by law.',
+        ],
+      },
+      {
+        heading: 'Your rights',
+        body: ['Depending on where you live, you may have the right to:'],
+        list: [
+          'Access the personal information we hold about you.',
+          'Correct inaccurate or incomplete information.',
+          'Request deletion of your information.',
+          'Restrict or object to how we process it.',
+          'Receive your information in a portable format.',
+          'Withdraw consent where processing is based on it.',
+        ],
+      },
+      {
+        heading: 'International transfers',
+        body: [
+          'We operate from the United Arab Emirates and India and may process information in either location. Where data crosses borders, we take steps to ensure it remains protected in line with this policy.',
+        ],
+      },
+      {
+        heading: "Children's privacy",
+        body: [
+          'Our services are intended for businesses and are not directed to children under 16. We do not knowingly collect their personal information.',
+        ],
+      },
+      {
+        heading: 'Changes to this policy',
+        body: [
+          "We may update this policy from time to time. The “last updated” date above reflects the latest revision, and material changes will be highlighted on this page.",
+        ],
+      },
+    ],
+  },
+  terms: {
+    slug: 'terms',
+    title: 'Terms of Service',
+    updated: LEGAL_UPDATED,
+    summary:
+      'The terms that govern your use of the Finaccru Infotech website and the services we provide.',
+    intro:
+      'These Terms govern your use of the Finaccru Infotech website and any services we provide. By using our site or engaging us, you agree to these Terms. Please read them carefully.',
+    sections: [
+      {
+        heading: 'Acceptance of terms',
+        body: [
+          'By accessing this website or engaging Finaccru Infotech, you agree to be bound by these Terms. If you do not agree, please do not use the site or our services.',
+        ],
+      },
+      {
+        heading: 'Our services',
+        body: [
+          'Finaccru Infotech provides software engineering, cloud and DevOps, mobile and web application development, data and AI, cybersecurity, and managed IT services. The specific scope, deliverables, and fees for any engagement are set out in a separate proposal or agreement, which takes precedence over these Terms where they conflict.',
+        ],
+      },
+      {
+        heading: 'Your responsibilities',
+        body: ['When you work with us, you agree to:'],
+        list: [
+          'Provide accurate, complete information and the materials and access we reasonably need to deliver the work.',
+          'Use our website and services lawfully and not interfere with their operation or security.',
+          'Keep any account credentials confidential and secure.',
+          'Pay invoices in line with the agreed schedule.',
+        ],
+      },
+      {
+        heading: 'Fees and payment',
+        body: [
+          'Fees, currency, and payment schedules are defined in the applicable proposal or agreement. Unless stated otherwise, invoices are due within the agreed term, and overdue amounts may lead to suspension of work. We give reasonable advance notice of any change to standard rates.',
+        ],
+      },
+      {
+        heading: 'Intellectual property',
+        body: [
+          'Unless your engagement agreement states otherwise, deliverables we create specifically for you become yours on full payment. Our pre-existing tools, frameworks, and know-how, along with the content and branding on this website, remain our property and are protected by applicable copyright and trademark law.',
+        ],
+      },
+      {
+        heading: 'Confidentiality',
+        body: [
+          "Each party will protect the other's confidential information and use it only to perform the engagement, except where disclosure is required by law. This obligation continues after the engagement ends.",
+        ],
+      },
+      {
+        heading: 'Warranties and disclaimers',
+        body: [
+          'We perform our services with reasonable skill and care. Except as expressly stated, the website and services are provided "as is" without warranties of any kind, to the fullest extent permitted by law.',
+        ],
+      },
+      {
+        heading: 'Limitation of liability',
+        body: [
+          'To the extent permitted by law, our total liability arising from an engagement is limited to the fees paid for the service giving rise to the claim. We are not liable for indirect, incidental, or consequential loss, including lost profits or data.',
+        ],
+      },
+      {
+        heading: 'Service availability',
+        body: [
+          'We aim to keep this website and our services available, but do not guarantee uninterrupted or error-free operation and are not liable for downtime outside our reasonable control.',
+        ],
+      },
+      {
+        heading: 'Termination',
+        body: [
+          'Either party may end an engagement in line with the terms of the applicable agreement, on written notice. Accrued payment obligations and any terms intended to survive — including confidentiality and limitation of liability — continue after termination.',
+        ],
+      },
+      {
+        heading: 'Governing law',
+        body: [
+          'These Terms are governed by the laws of the United Arab Emirates, and the courts of Dubai have jurisdiction over any dispute, unless your engagement agreement specifies otherwise.',
+        ],
+      },
+      {
+        heading: 'Changes to these terms',
+        body: [
+          'We may revise these Terms from time to time. Continued use of the site after changes take effect constitutes acceptance of the revised Terms.',
+        ],
+      },
+    ],
+  },
+  cookies: {
+    slug: 'cookies',
+    title: 'Cookie Policy',
+    updated: LEGAL_UPDATED,
+    summary:
+      'How Finaccru Infotech uses cookies and similar technologies on our website, and how you can control them.',
+    intro:
+      'This Cookie Policy explains how Finaccru Infotech uses cookies and similar technologies on our website, and the choices you have. It should be read alongside our Privacy Policy.',
+    sections: [
+      {
+        heading: 'What cookies are',
+        body: [
+          'Cookies are small text files placed on your device when you visit a website. They help the site function, remember your preferences, and understand how it is used.',
+        ],
+      },
+      {
+        heading: 'How we use cookies',
+        body: ['We use a small number of cookies, grouped by purpose:'],
+        list: [
+          'Essential — required for the site to load and work correctly. These cannot be switched off.',
+          'Preference — remember choices such as language or region to improve your experience.',
+          'Analytics — help us understand, in aggregate and anonymised form, how visitors use the site so we can improve it.',
+        ],
+      },
+      {
+        heading: 'Third-party cookies',
+        body: [
+          'Some cookies may be set by third-party services we rely on, such as analytics or embedded content. Those providers process data under their own privacy policies.',
+        ],
+      },
+      {
+        heading: 'Managing cookies',
+        body: [
+          "Most browsers let you view, block, or delete cookies through their settings, usually under a “privacy” or “settings” menu. Blocking essential cookies may affect how the site works.",
+        ],
+      },
+      {
+        heading: 'Changes to this policy',
+        body: [
+          "We may update this Cookie Policy as our use of cookies evolves. The “last updated” date above shows the latest revision.",
+        ],
+      },
+    ],
+  },
+}
+
 // ── Aggregate: the single typed content object ─────────────────────────────
 // The mirror of the reference architecture's `siteContent` — every page section
 // reachable from one typed object. The granular consts above are kept private;
@@ -498,6 +745,7 @@ export const siteContent = {
   faqs,
   offices,
   footerColumns,
+  legal,
 }
 
 /**

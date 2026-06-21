@@ -123,9 +123,12 @@ export default function PrecisionSection() {
 
       {/* ── Block 2 — Pillars ────────────────────────────────── */}
       <div style={{ width: '100%', maxWidth: '82.292vw', margin: '0 auto' }}>
-        {/* Desktop staircase */}
+        {/* Desktop staircase — only ≥lg (1024px): the vw-based layout is calibrated for
+            wide screens, so below 1024 the chips overlap adjacent columns and "Launch"
+            runs off the edge. Narrower screens get the vertical timeline below instead.
+            (≥1024 is unchanged from before, so desktop stays byte-identical.) */}
         <div
-          className="hidden sm:block"
+          className="hidden lg:block"
           style={{ position: 'relative', width: '82.292vw', height: '31.94vw', color: '#0a0a0a' }}
         >
           {PILLARS.map((pillar) => (
@@ -210,11 +213,11 @@ export default function PrecisionSection() {
           ))}
         </div>
 
-        {/* Mobile vertical timeline — one continuous gradient spine connects the
-            four stages top→bottom, each a node on the line with its items beside
-            it. This replaces the desktop staircase below sm; the staircase above
-            (hidden sm:block) is untouched, so desktop stays byte-identical. */}
-        <div className="sm:hidden" style={{ position: 'relative', width: '100%', textAlign: 'left' }}>
+        {/* Vertical timeline — one continuous gradient spine connects the four stages
+            top→bottom, each a node on the line with its items beside it. Used below lg
+            (where the vw staircase is too cramped); the staircase above (hidden lg:block)
+            is untouched, so desktop stays byte-identical. */}
+        <div className="lg:hidden" style={{ position: 'relative', width: '100%', textAlign: 'left' }}>
           {/* the continuous spine — same gradient that flows down each desktop pillar */}
           <div
             aria-hidden="true"

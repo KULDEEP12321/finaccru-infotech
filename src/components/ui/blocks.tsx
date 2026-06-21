@@ -83,11 +83,11 @@ export function CTASection({
 // ── StatRow ────────────────────────────────────────────────────────────
 export function StatRow({ stats, onDark = false }: { stats: Stat[]; onDark?: boolean }) {
   return (
-    <div className="grid grid-cols-2 gap-8 sm:grid-cols-4">
+    <div className="grid grid-cols-2 gap-8 lg:grid-cols-4">
       {stats.map((s) => (
         <div key={s.label}>
           <div
-            className={`font-display text-[44px] font-semibold leading-none tracking-[-0.02em] ${
+            className={`font-display text-[44px] font-semibold leading-none tracking-[-0.02em] max-[430px]:text-[32px] max-[360px]:text-[28px] ${
               onDark ? 'text-white' : 'text-ink'
             }`}
           >

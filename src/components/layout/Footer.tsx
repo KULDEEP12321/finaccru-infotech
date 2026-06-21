@@ -41,9 +41,14 @@ export default function Footer() {
             © {year} {company.name}. All rights reserved.
           </p>
           <div className="flex gap-5">
-            {['Privacy', 'Terms', 'Cookies', 'Sitemap'].map((l) => (
-              <Link key={l} to="/contact" className="text-fine text-ink-muted48 hover:text-ink">
-                {l}
+            {[
+              { label: 'Privacy', to: '/privacy' },
+              { label: 'Terms', to: '/terms' },
+              { label: 'Cookies', to: '/cookies' },
+              { label: 'Sitemap', to: '/sitemap' },
+            ].map((l) => (
+              <Link key={l.label} to={l.to} className="text-fine text-ink-muted48 hover:text-ink">
+                {l.label}
               </Link>
             ))}
           </div>

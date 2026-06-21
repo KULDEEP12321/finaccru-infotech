@@ -17,6 +17,10 @@ const staticPages: Entry[] = [
   { path: '/blog', changefreq: 'weekly', priority: '0.8' },
   { path: '/about', changefreq: 'monthly', priority: '0.7' },
   { path: '/contact', changefreq: 'monthly', priority: '0.7' },
+  { path: '/sitemap', changefreq: 'monthly', priority: '0.3' },
+  { path: '/privacy', changefreq: 'yearly', priority: '0.3' },
+  { path: '/terms', changefreq: 'yearly', priority: '0.3' },
+  { path: '/cookies', changefreq: 'yearly', priority: '0.3' },
 ]
 
 const servicePages: Entry[] = serviceCategories.map((c) => ({
