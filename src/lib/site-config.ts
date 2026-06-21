@@ -14,7 +14,7 @@ export const siteConfig = {
   // URLs point here so the canonical host is indexed, not the preview deployment.
   url: 'https://finaccruinfotech.com',
   locale: 'en_US',
-  themeColor: '#0A0A0A',
+  themeColor: '#FFFAF0', // cream canvas — matches the Clay top-nav (design2.md)
   // Branded 1200x630 share card served from /public.
   ogImage: '/og-image.png',
   ogImageWidth: '1200',

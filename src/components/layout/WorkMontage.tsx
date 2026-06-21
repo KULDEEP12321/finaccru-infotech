@@ -50,7 +50,7 @@ export default function WorkMontage() {
 
           {/* Brand showreel tile (static — the live reel is in FreedomSection) */}
           <div className="col-span-4 row-span-4 overflow-hidden rounded-[1.6vmax] bg-black">
-            <div className="flex h-full w-full flex-col justify-end bg-[radial-gradient(120%_120%_at_30%_20%,#2997ff_0%,#0066cc_45%,#08182e_100%)] p-[1.6vmax] text-white">
+            <div className="flex h-full w-full flex-col justify-end bg-[radial-gradient(120%_120%_at_30%_20%,#ff6b5a_0%,#ff4d8b_45%,#0a1a1a_100%)] p-[1.6vmax] text-white">
               <p className="text-[1.2vmax] font-semibold uppercase tracking-[0.14em] text-white/70">
                 Showreel
               </p>
@@ -66,7 +66,7 @@ export default function WorkMontage() {
 
           {/* Gradient brand sweep */}
           <div className="col-span-7 row-span-3 overflow-hidden rounded-[1.6vmax]">
-            <div className="h-full w-full bg-[linear-gradient(110deg,#0066cc_0%,#2997ff_55%,#0a2a4d_100%)]" />
+            <div className="h-full w-full bg-[linear-gradient(110deg,#ff4d8b_0%,#ff6b5a_55%,#0a1a1a_100%)]" />
           </div>
 
           {/* Service card */}

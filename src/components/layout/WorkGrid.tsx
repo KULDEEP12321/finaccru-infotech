@@ -35,7 +35,7 @@ const projects: Project[] = [
 ]
 
 const THEMES: Record<string, string> = {
-  blue: 'linear-gradient(150deg,#0a2a4d 0%,#0066cc 62%,#2997ff 100%)',
+  blue: 'linear-gradient(150deg,#0a1a1a 0%,#ff4d8b 62%,#ff6b5a 100%)',
   steel: 'linear-gradient(160deg,#0b1220 0%,#1c2c3e 70%,#2e4760 100%)',
   cyan: 'linear-gradient(145deg,#04222b 0%,#0a5566 60%,#1aa0b8 100%)',
   amber: 'linear-gradient(150deg,#2a1604 0%,#9c5410 55%,#e0902a 100%)',

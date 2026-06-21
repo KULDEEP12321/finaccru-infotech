@@ -501,10 +501,10 @@ export const siteContent = {
 }
 
 /**
- * Accent theme keys. Finaccru ships a SINGLE brand accent — Action Blue
- * (#0066cc) — per design.md ("no second brand color exists"). This type mirrors
- * the reference architecture's accent-theme config so additional accents can be
- * added when a live switcher is wanted; see src/lib/theme-options.ts for the
- * full rationale and the steps to wire one safely.
+ * Accent theme keys. Finaccru runs the Clay system (design2.md): a near-black
+ * action color (`primary` #0a0a0a) with a decorative brand accent (brand-pink
+ * #ff4d8b). This type mirrors the reference architecture's accent-theme config
+ * so additional accents can be added when a live switcher is wanted; see
+ * src/lib/theme-options.ts for the full rationale and the steps to wire one safely.
  */
 export type AccentTheme = 'finaccru'

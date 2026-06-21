@@ -17,7 +17,7 @@ import AriaHero from '@/components/layout/AriaHero'
 //   engulfs. Instead we PIN the rect to the viewport and grow ONLY the F about the
 //   stem midline. Engulf is reached when the scaled stem covers the viewport's
 //   farthest edge — computed live below (aspect-correct), so it works on any screen.
-//   We also crossfade the field parchment → the montage's own dark (#272729) so the
+//   We also crossfade the field parchment → the montage's own dark (#1a2a2a) so the
 //   thin arm gaps dissolve invisibly, and drop the overlay before the page hands off.
 
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v))
@@ -93,9 +93,9 @@ export default function FHero() {
     // the precise gate is always live in time — no missed edge frames.
     let nearView = true
 
-    // parchment #f5f5f7 → dark tile #272729 (== WorkMontage bg, so slivers vanish)
-    const F5 = [0xf5, 0xf5, 0xf7]
-    const DK = [0x27, 0x27, 0x29]
+    // parchment #faf5e8 → dark tile #1a2a2a (== WorkMontage bg-tile1, so slivers vanish)
+    const F5 = [0xfa, 0xf5, 0xe8]
+    const DK = [0x1a, 0x2a, 0x2a]
     const mixField = (t: number) =>
       `rgb(${(lerp(F5[0], DK[0], t) | 0)},${(lerp(F5[1], DK[1], t) | 0)},${(lerp(F5[2], DK[2], t) | 0)})`
 
@@ -232,11 +232,11 @@ export default function FHero() {
         </mask>
       </defs>
       <g mask="url(#fWindow)">
-        <rect ref={rectRef} x="0" y="0" width={VB} height={VB} fill="#f5f5f7" />
+        <rect ref={rectRef} x="0" y="0" width={VB} height={VB} fill="#faf5e8" />
         {/* soft 'pebble' blobs OUTSIDE the F, clipped to the field */}
-        <circle cx="150" cy="220" r="70" fill="#1d1d1f" opacity="0.10" filter="url(#pebbleBlur)" />
-        <circle cx="845" cy="360" r="95" fill="#0066cc" opacity="0.12" filter="url(#pebbleBlur)" />
-        <circle cx="760" cy="800" r="80" fill="#1d1d1f" opacity="0.08" filter="url(#pebbleBlur)" />
+        <circle cx="150" cy="220" r="70" fill="#0a0a0a" opacity="0.10" filter="url(#pebbleBlur)" />
+        <circle cx="845" cy="360" r="95" fill="#ff4d8b" opacity="0.12" filter="url(#pebbleBlur)" />
+        <circle cx="760" cy="800" r="80" fill="#0a0a0a" opacity="0.08" filter="url(#pebbleBlur)" />
       </g>
     </svg>
   )

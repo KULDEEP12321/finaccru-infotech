@@ -53,14 +53,12 @@ export const Route = createRootRoute({
       { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
       { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
       { rel: 'preconnect', href: 'https://fonts.gstatic.com', crossOrigin: 'anonymous' },
-      // The Helvetica Now / Mazzard webfonts are @imported in index.css; opening
-      // the connection early shaves a round-trip off the late-discovered fetch.
-      { rel: 'preconnect', href: 'https://db.onlinewebfonts.com', crossOrigin: 'anonymous' },
       // First hero pixel: the AriaHero poster shown through the F window.
       { rel: 'preload', as: 'image', href: '/finn/frame-018.webp' },
+      // design2.md runs one type system: Inter (body + Plain Black display substitute).
       {
         rel: 'stylesheet',
-        href: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Jost:wght@400;500;600;700&display=swap',
+        href: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap',
       },
       { rel: 'stylesheet', href: appCss },
     ],

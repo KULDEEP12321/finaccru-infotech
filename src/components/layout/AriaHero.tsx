@@ -550,7 +550,7 @@ export default function AriaHero({ active = true }: { active?: boolean }) {
       <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-black/5" />
       <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/25" />
       {/* faint brand wash, keeps it Finaccru rather than generic */}
-      <div className="absolute inset-0 bg-[radial-gradient(120%_90%_at_12%_88%,rgba(0,102,204,0.28),transparent_55%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(120%_90%_at_12%_88%,rgba(255,77,139,0.28),transparent_55%)]" />
 
       {/* 3 — content: bottom-left on mobile, centred-left on desktop */}
       <div className="absolute inset-0 flex flex-col justify-end px-6 pb-16 sm:px-12 sm:justify-center sm:pb-0 md:px-16">
