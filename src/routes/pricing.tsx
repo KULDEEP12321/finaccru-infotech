@@ -19,6 +19,7 @@ export const Route = createFileRoute('/pricing')({
       title: pageTitle('Pricing'),
       description,
       path: '/pricing',
+      image: '/og/pricing.png',
       keywords:
         'software development pricing, dedicated team cost, fixed project pricing, managed IT retainer, engagement models',
     }),

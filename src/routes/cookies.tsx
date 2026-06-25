@@ -13,6 +13,7 @@ export const Route = createFileRoute('/cookies')({
       title: pageTitle('Cookie Policy'),
       description: doc.summary,
       path: '/cookies',
+      image: '/og/cookies.png',
       keywords: 'Finaccru Infotech cookie policy, cookies, tracking technologies',
     }),
     scripts: [

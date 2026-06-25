@@ -26,6 +26,8 @@ export const Route = createFileRoute('/services/$slug')({
         title: pageTitle(cat.label),
         description: cat.summary,
         path,
+        // Per-service share card; drop `public/og/services/<slug>.png` to replace.
+        image: `/og/services/${cat.slug}.png`,
         keywords: cat.subservices.map((s) => s.title).join(', '),
       }),
       scripts: [

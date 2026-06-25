@@ -13,6 +13,7 @@ export const Route = createFileRoute('/privacy')({
       title: pageTitle('Privacy Policy'),
       description: doc.summary,
       path: '/privacy',
+      image: '/og/privacy.png',
       keywords: 'Finaccru Infotech privacy policy, data protection, personal information',
     }),
     scripts: [

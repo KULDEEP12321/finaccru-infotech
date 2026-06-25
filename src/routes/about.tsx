@@ -13,6 +13,7 @@ export const Route = createFileRoute('/about')({
       title: pageTitle('About'),
       description,
       path: '/about',
+      image: '/og/about.png',
       keywords:
         'about Finaccru Infotech, software engineering team, Dubai software company, custom software experts',
     }),

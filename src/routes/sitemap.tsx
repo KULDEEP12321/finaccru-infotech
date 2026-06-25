@@ -12,6 +12,7 @@ export const Route = createFileRoute('/sitemap')({
       title: pageTitle('Sitemap'),
       description,
       path: '/sitemap',
+      image: '/og/sitemap.png',
       keywords: 'Finaccru Infotech sitemap, site index, all pages',
     }),
     scripts: [

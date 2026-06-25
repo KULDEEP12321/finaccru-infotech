@@ -13,6 +13,7 @@ export const Route = createFileRoute('/terms')({
       title: pageTitle('Terms of Service'),
       description: doc.summary,
       path: '/terms',
+      image: '/og/terms.png',
       keywords: 'Finaccru Infotech terms of service, terms and conditions, service agreement',
     }),
     scripts: [

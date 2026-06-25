@@ -14,6 +14,7 @@ export const Route = createFileRoute('/services/')({
       title: pageTitle('Services'),
       description,
       path: '/services',
+      image: '/og/services.png',
       keywords:
         'software development services, AI ML development, mobile app development, cloud DevOps, cybersecurity, managed IT services',
     }),

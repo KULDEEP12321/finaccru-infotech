@@ -52,6 +52,7 @@ export const Route = createFileRoute('/blog')({
       title: pageTitle('Blog'),
       description,
       path: '/blog',
+      image: '/og/blog.png',
       keywords:
         'software engineering blog, custom software insights, cloud engineering, AI ML, Finaccru Infotech',
     }),
