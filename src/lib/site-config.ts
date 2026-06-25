@@ -9,10 +9,12 @@ export const siteConfig = {
   titleTemplate: '%s | Finaccru Infotech',
   defaultTitle: 'Finaccru Infotech — Custom Software, Cloud & AI Engineering',
   description:
-    'Finaccru Infotech designs, builds, and runs custom software, cloud platforms, and intelligent systems for ambitious businesses.',
-  // The intended production domain (currently also live on Vercel). All canonical
-  // URLs point here so the canonical host is indexed, not the preview deployment.
-  url: 'https://finaccruinfotech.com',
+    'Finaccru Infotech is a Dubai software company that designs, builds, and runs custom software, cloud & DevOps, mobile & web apps, data, AI & ML, and cybersecurity — plus penetration testing, managed IT, and dedicated developers to hire.',
+  // TEMPORARY: pointed at the live Vercel deployment so canonical + OG/share URLs
+  // resolve to the host that actually serves this site (and its /og images). Flip
+  // back to 'https://finaccruinfotech.com' once that domain is attached to this
+  // Vercel project — then everything resolves on the real canonical host.
+  url: 'https://finaccru-infotech.vercel.app',
   locale: 'en_US',
   themeColor: '#FFFAF0', // cream canvas — matches the Clay top-nav (design2.md)
   // Branded 1200x630 share card served from /public.
