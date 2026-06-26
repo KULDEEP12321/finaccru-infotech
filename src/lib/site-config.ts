@@ -12,9 +12,12 @@ export const siteConfig = {
     'Finaccru Infotech is a Dubai software company that designs, builds, and runs custom software, cloud & DevOps, mobile & web apps, data, AI & ML, and cybersecurity — plus penetration testing, managed IT, and dedicated developers to hire.',
   // Canonical production host. Every canonical tag, OG/share URL, sitemap <loc>,
   // robots Sitemap line, and JSON-LD @id reads from here, so flipping the brand
-  // domain is a one-line change. Attach this domain to the Cloudflare Worker
-  // deployment (custom domain / route) so these URLs resolve on the live host.
-  url: 'https://finaccruinfotech.com',
+  // domain is a one-line change.
+  // TEMPORARY: pointed at the live Cloudflare Worker host so OG/share URLs resolve
+  // on the host that actually serves the site and its /og images. Flip back to
+  // 'https://finaccruinfotech.com' once that domain is attached to this Worker
+  // (custom domain / route) — then everything resolves on the real canonical host.
+  url: 'https://finaccru-infotech.seoexpertup.workers.dev',
   // Bare host (no scheme) — used for SMTP EHLO and anywhere a hostname (not a
   // full URL) is required. Kept in lock-step with `url` above.
   domain: 'finaccruinfotech.com',
