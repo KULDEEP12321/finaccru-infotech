@@ -18,7 +18,7 @@ import type {
 
 /**
  * Sanity read layer, wrapped in TanStack Start server functions so GROQ runs on
- * the server (Nitro/Vercel) and the browser only ever sees the projected,
+ * the server (Cloudflare Workers) and the browser only ever sees the projected,
  * UI-friendly shapes in `sanity.types.ts`.
  *
  * The dataset is public, so a single token-less client (`sanity/lib/client.ts`)

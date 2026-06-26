@@ -152,7 +152,7 @@ export function serviceSchema(service: {
     url: absoluteUrl(service.path),
     ...(service.serviceType ? { serviceType: service.serviceType } : {}),
     provider: { '@id': `${siteConfig.url}/#organization` },
-    areaServed: 'Worldwide',
+    areaServed: siteConfig.areaServed,
   })
 }
 

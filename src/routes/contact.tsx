@@ -1,10 +1,10 @@
 import { createFileRoute } from '@tanstack/react-router'
 import Contact from '@/components/pages/Contact'
-import { pageTitle } from '@/lib/site-config'
+import { pageTitle, siteConfig } from '@/lib/site-config'
 import { seo, webPageSchema, breadcrumbSchema } from '@/lib/seo'
 
 const description =
-  'Get in touch with Finaccru Infotech to scope a project, build a dedicated team, or talk through a managed engagement. We typically reply within one business day.'
+  `Get in touch with ${siteConfig.name} to scope a project, build a dedicated team, or talk through a managed engagement. We typically reply within one business day.`
 
 export const Route = createFileRoute('/contact')({
   head: () => ({
@@ -14,7 +14,7 @@ export const Route = createFileRoute('/contact')({
       path: '/contact',
       image: '/og/contact.png',
       keywords:
-        'contact Finaccru Infotech, hire software developers, start a software project, software consultation',
+        `contact ${siteConfig.name}, hire software developers, start a software project, software consultation`,
     }),
     scripts: [
       webPageSchema({

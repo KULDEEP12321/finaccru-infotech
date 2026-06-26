@@ -3,23 +3,27 @@ import { tanstackStart } from '@tanstack/react-start/plugin/vite'
 import viteReact from '@vitejs/plugin-react'
 import viteTsConfigPaths from 'vite-tsconfig-paths'
 import tailwindcss from '@tailwindcss/vite'
-import { nitro } from 'nitro/vite'
+import { cloudflare } from '@cloudflare/vite-plugin'
 
-// TanStack Start (SSR) on Vercel via the first-party Nitro Vite plugin.
-// Nitro auto-detects the Vercel build environment (the VERCEL env var) in CI and
-// applies its `vercel` preset, emitting Build Output API v3 artifacts to
-// .vercel/output — no explicit preset is set, so local builds use the node
-// fallback (.output/). To migrate back to Cloudflare later, swap nitro() for
-// cloudflare({ viteEnvironment: { name: 'ssr' } }) (see wrangler.jsonc).
-// Plugin order is load-bearing: tsconfig paths (the '@' alias) → tailwind →
-// tanstackStart (owns route generation + SSR) → nitro (server build/output) →
-// react.
+// TanStack Start (SSR) on Cloudflare Workers via the first-party Cloudflare Vite
+// plugin. The plugin reads wrangler.jsonc for the Worker entry, bindings, and
+// vars, and emits the Worker build that `wrangler deploy` ships. This runtime is
+// required by the contact form, which talks raw SMTP over `cloudflare:sockets`
+// and rate-limits via the `CONTACT_FORM_RATE_LIMITER` binding — neither exists
+// on a plain Node runtime.
+//
+// `viteEnvironment: { name: 'ssr' }` routes the TanStack Start SSR environment
+// into the Workers (workerd) build. This site targets Cloudflare end-to-end —
+// hosting, the SMTP socket transport, rate limiting, and the `_headers` rules.
+//
+// Plugin order mirrors the proven reference setup: cloudflare → tsconfig paths
+// (the '@' alias) → tailwind → tanstackStart (route generation + SSR) → react.
 export default defineConfig({
   plugins: [
+    cloudflare({ viteEnvironment: { name: 'ssr' } }),
     viteTsConfigPaths({ projects: ['./tsconfig.json'] }),
     tailwindcss(),
     tanstackStart(),
-    nitro(),
     viteReact(),
   ],
 })

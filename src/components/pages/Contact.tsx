@@ -2,6 +2,7 @@ import { useState, type ChangeEvent, type FormEvent } from 'react'
 import { Container, Eyebrow, Button } from '@/components/ui/primitives'
 import { Icon } from '@/components/ui/Icons'
 import { siteContent } from '@/lib/site-content'
+import { submitContactForm } from '@/lib/contact-form'
 const { services, company, offices } = siteContent
 
 const field =
@@ -9,6 +10,8 @@ const field =
 
 export default function Contact() {
   const [sent, setSent] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -22,10 +25,25 @@ export default function Contact() {
     (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) =>
       setForm((f) => ({ ...f, [k]: e.target.value }))
 
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    // No backend in this build — surface the captured payload as confirmation.
-    setSent(true)
+    if (submitting) return
+    setSubmitting(true)
+    setError(null)
+    try {
+      // POSTs to the Cloudflare Worker server function, which rate-limits by IP
+      // and emails the team + a confirmation to the sender.
+      await submitContactForm({ data: form })
+      setSent(true)
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Something went wrong sending your message. Please try again.',
+      )
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -86,6 +104,7 @@ export default function Contact() {
                   className="mt-8"
                   onClick={() => {
                     setSent(false)
+                    setError(null)
                     setForm({ name: '', email: '', company: '', service: services[0].name, message: '' })
                   }}
                 >
@@ -153,8 +172,17 @@ export default function Contact() {
                   />
                 </div>
 
+                {error && (
+                  <div
+                    role="alert"
+                    className="flex items-start gap-2.5 rounded-lg bg-brand-pink/10 px-4 py-3 text-caption text-ink"
+                  >
+                    <Icon name="close" size={16} className="mt-0.5 shrink-0 text-brand-pink" />
+                    <span>{error}</span>
+                  </div>
+                )}
                 <Button type="submit" className="w-full">
-                  Send message
+                  {submitting ? 'Sending…' : 'Send message'}
                 </Button>
                 <p className="text-center text-fine text-ink-muted48">
                   By sending this you agree to our privacy policy. No spam, ever.

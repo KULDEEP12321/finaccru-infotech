@@ -9,7 +9,7 @@ export default function About() {
       {/* Editorial hero — the rare weight-300 reading */}
       <section className="bg-parchment">
         <Container width="content" className="py-20 text-center sm:py-28">
-          <Eyebrow className="mb-5">About Finaccru Infotech</Eyebrow>
+          <Eyebrow className="mb-5">About {company.name}</Eyebrow>
           <h1 className="display-caps text-[34px] text-ink sm:text-[44px]">
             We are engineers who care what the software actually does for the business behind it.
           </h1>
@@ -28,7 +28,7 @@ export default function About() {
             <Eyebrow onDark>Our story</Eyebrow>
             <div className="space-y-6 text-lead font-normal text-bodymuted">
               <p>
-                Finaccru Infotech started as a small team frustrated by the gap between what
+                {company.name} started as a small team frustrated by the gap between what
                 businesses were promised and what software actually delivered. Too many projects
                 ended in shelfware; too few left teams stronger than they started.
               </p>

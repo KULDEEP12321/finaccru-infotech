@@ -3,7 +3,7 @@
  *
  * Resolution order (first defined wins):
  *   1. Vite build-time env  — `import.meta.env.VITE_SANITY_*`  (Studio + browser)
- *   2. Runtime process env  — `process.env.SANITY_*`          (Nitro/Vercel SSR)
+ *   2. Runtime process env  — `process.env.SANITY_*`   (Cloudflare Workers SSR, nodejs_compat)
  *   3. The hard-coded defaults below.
  *
  * These are PUBLIC values — the projectId/dataset appear in every Sanity CDN
@@ -12,7 +12,7 @@
  *
  * ── Point at a DIFFERENT Finaccru project ─────────────────────────────────
  * The live project id is baked in as the default below (it is public, so this
- * is safe and keeps the CLI / Vercel / fresh clones working with zero config).
+ * is safe and keeps the CLI / Cloudflare SSR / fresh clones working with zero config).
  * To target another project/dataset (e.g. a `staging` dataset) without editing
  * source, create a `.env`:
  *   VITE_SANITY_PROJECT_ID=xxxxxxxx
@@ -27,9 +27,9 @@ type ViteEnv = {
 
 // Live Finaccru Infotech Sanity project (org "Finaccru Infotech", id oTX5BdNtV).
 // These are PUBLIC values — the projectId appears in every Sanity CDN URL — so
-// baking them in as defaults is safe and lets every context (Vite, Nitro SSR on
-// Vercel, and the plain-Node Sanity CLI, which doesn't read `.env`) resolve the
-// project without extra wiring. Override via the VITE_/SANITY_ env vars above.
+// baking them in as defaults is safe and lets every context (Vite, Cloudflare
+// Workers SSR, and the plain-Node Sanity CLI, which doesn't read `.env`) resolve
+// the project without extra wiring. Override via the VITE_/SANITY_ env vars above.
 export const defaultProjectId = '2jhreob8'
 export const defaultDataset = 'production'
 export const defaultApiVersion = '2024-12-01'

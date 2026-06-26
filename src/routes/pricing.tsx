@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import Pricing from '@/components/pages/Pricing'
 import { siteContent } from '@/lib/site-content'
 const { pricing, faqs } = siteContent
-import { pageTitle } from '@/lib/site-config'
+import { pageTitle, siteConfig } from '@/lib/site-config'
 import {
   seo,
   offerCatalogSchema,
@@ -11,7 +11,7 @@ import {
 } from '@/lib/seo'
 
 const description =
-  'Finaccru Infotech engagement models: fixed-scope projects, dedicated teams, and managed retainers. Transparent pricing built around how you want to work.'
+  `${siteConfig.name} engagement models: fixed-scope projects, dedicated teams, and managed retainers. Transparent pricing built around how you want to work.`
 
 export const Route = createFileRoute('/pricing')({
   head: () => ({

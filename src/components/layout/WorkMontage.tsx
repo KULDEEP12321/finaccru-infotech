@@ -11,7 +11,7 @@ import AppMock from '@/components/layout/AppMock'
 
 const chips = ['Custom Software', 'Cloud & DevOps', 'Data & AI', 'Mobile', 'Security']
 const logos = [
-  'https://svgl.app/library/vercel.svg',
+  'https://svgl.app/library/cloudflare.svg',
   'https://svgl.app/library/figma.svg',
   'https://svgl.app/library/google-cloud.svg',
   'https://svgl.app/library/spotify.svg',

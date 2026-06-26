@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import LegalPage from '@/components/pages/Legal'
 import { siteContent } from '@/lib/site-content'
 const { legal } = siteContent
-import { pageTitle } from '@/lib/site-config'
+import { pageTitle, siteConfig } from '@/lib/site-config'
 import { seo, webPageSchema, breadcrumbSchema } from '@/lib/seo'
 
 const doc = legal.privacy
@@ -14,7 +14,7 @@ export const Route = createFileRoute('/privacy')({
       description: doc.summary,
       path: '/privacy',
       image: '/og/privacy.png',
-      keywords: 'Finaccru Infotech privacy policy, data protection, personal information',
+      keywords: `${siteConfig.name} privacy policy, data protection, personal information`,
     }),
     scripts: [
       webPageSchema({

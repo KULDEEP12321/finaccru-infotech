@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import LegalPage from '@/components/pages/Legal'
 import { siteContent } from '@/lib/site-content'
 const { legal } = siteContent
-import { pageTitle } from '@/lib/site-config'
+import { pageTitle, siteConfig } from '@/lib/site-config'
 import { seo, webPageSchema, breadcrumbSchema } from '@/lib/seo'
 
 const doc = legal.terms
@@ -14,7 +14,7 @@ export const Route = createFileRoute('/terms')({
       description: doc.summary,
       path: '/terms',
       image: '/og/terms.png',
-      keywords: 'Finaccru Infotech terms of service, terms and conditions, service agreement',
+      keywords: `${siteConfig.name} terms of service, terms and conditions, service agreement`,
     }),
     scripts: [
       webPageSchema({

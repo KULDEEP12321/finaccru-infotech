@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from '@tanstack/react-router'
 import { siteContent } from '@/lib/site-content'
 const { company } = siteContent
+import { siteConfig } from '@/lib/site-config'
 
 // AriaHero — the cinematic scene revealed once you've zoomed THROUGH the F.
 //
@@ -568,7 +569,7 @@ export default function AriaHero({ active = true }: { active?: boolean }) {
           >
             Hey there — meet FINN,
             <br />
-            Finaccru&rsquo;s Infotech Navigator.
+            {siteConfig.shortName}&rsquo;s Infotech Navigator.
           </p>
 
           {/* typewriter line */}

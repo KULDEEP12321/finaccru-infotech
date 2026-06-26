@@ -8,6 +8,9 @@ dist-ssr
 .env
 .env.*
 !.env.example
+# Cloudflare Worker local secrets (SMTP_PASSWORD etc.)
+.dev.vars
+.dev.vars.*
 .vscode/*
 !.vscode/extensions.json
 logs

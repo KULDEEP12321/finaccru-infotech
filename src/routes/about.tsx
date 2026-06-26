@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import About from '@/components/pages/About'
 import { siteContent } from '@/lib/site-content'
 const { company } = siteContent
-import { pageTitle } from '@/lib/site-config'
+import { pageTitle, siteConfig } from '@/lib/site-config'
 import { seo, webPageSchema, breadcrumbSchema } from '@/lib/seo'
 
 const description = `${company.name} is an engineering team that designs, builds, and runs custom software, cloud platforms, and intelligent systems. Founded ${company.founded}, headquartered in ${company.hq}.`
@@ -15,7 +15,7 @@ export const Route = createFileRoute('/about')({
       path: '/about',
       image: '/og/about.png',
       keywords:
-        'about Finaccru Infotech, software engineering team, Dubai software company, custom software experts',
+        `about ${siteConfig.name}, software engineering team, Dubai software company, custom software experts`,
     }),
     scripts: [
       webPageSchema({

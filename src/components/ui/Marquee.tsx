@@ -11,7 +11,7 @@ const logos = [
   { src: 'https://svgl.app/library/google-cloud.svg', alt: 'Google Cloud' },
   { src: 'https://svgl.app/library/bing.svg', alt: 'Bing' },
   { src: 'https://svgl.app/library/lottielab.svg', alt: 'Lottielab' },
-  { src: 'https://svgl.app/library/vercel.svg', alt: 'Vercel' },
+  { src: 'https://svgl.app/library/cloudflare.svg', alt: 'Cloudflare' },
 ]
 
 interface LogoItem {

@@ -1,6 +1,7 @@
 import type { ReactNode, MouseEventHandler } from 'react'
 import { Link } from '@tanstack/react-router'
 import { Icon } from '@/components/ui/Icons'
+import { siteConfig } from '@/lib/site-config'
 
 type Width = 'wide' | 'content'
 type Surface = 'light' | 'parchment' | 'dark' | 'dark2' | 'dark3'
@@ -154,7 +155,13 @@ export function Logo({
           onDark ? 'text-white' : 'text-ink'
         }`}
       >
-        Finaccru<span className="text-primary"> Infotech</span>
+        {/* Two-tone wordmark, config-driven: shortName in ink, the remainder
+            (e.g. "Infotech") in the primary accent. Convention: shortName is a
+            prefix of name, so a rename flows from siteConfig alone. */}
+        {siteConfig.shortName}
+        <span className="text-primary">
+          {siteConfig.name.slice(siteConfig.shortName.length)}
+        </span>
       </span>
     </Link>
   )

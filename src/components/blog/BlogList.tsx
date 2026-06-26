@@ -8,6 +8,7 @@ import type {
 import { Container, Eyebrow } from '@/components/ui/primitives'
 import { Reveal } from '@/components/ui/Reveal'
 import { cn } from '@/lib/cn'
+import { siteConfig } from '@/lib/site-config'
 import BlogCard from './BlogCard'
 import FeaturedArticle from './FeaturedArticle'
 
@@ -68,7 +69,7 @@ export default function BlogList({
         <div className="max-w-content">
           <Eyebrow>Insights</Eyebrow>
           <h1 className="mt-3 text-display-lg font-semibold tracking-[-0.01em] text-ink sm:text-hero">
-            The Finaccru blog
+            The {siteConfig.shortName} blog
           </h1>
           <p className="mt-4 max-w-2xl text-lead-airy font-light text-ink-muted80">
             Engineering notes, product thinking, and field reports on building

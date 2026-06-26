@@ -12,10 +12,12 @@ const { services } = siteContent
 // cell — exactly the reveal Armory uses for its project image — while the icon
 // flips to white, the title shifts to brand blue, and the chevron nudges.
 //
-// Touch devices have no hover, so below `lg` the same reveal is driven by SCROLL:
-// the row crossing the viewport centre becomes "active" (an IntersectionObserver
-// with a thin centre band picks it), and gets the identical treatment. A compact
-// media square is shown on mobile so the image reveal has somewhere to land.
+// Devices that can't hover (touch phones, tablets, touchscreens — at ANY screen
+// size) drive the same reveal by SCROLL instead: the row crossing the viewport
+// centre becomes "active" (an IntersectionObserver with a thin centre band picks
+// it), and gets the identical treatment. Without this, a no-hover device on a wide
+// screen (≥lg) would show nothing at all. A compact media square is shown on mobile
+// so the image reveal has somewhere to land.
 //
 // Images live in /public/img/services (abstract cosmic visuals). A dark brand
 // gradient sits beneath each as a fallback/tint, and a radial scrim keeps the
@@ -137,18 +139,20 @@ export default function ServicesList() {
   const [activeIndex, setActiveIndex] = useState(-1)
   const rowsRef = useRef<(HTMLAnchorElement | null)[]>([])
 
-  // Below `lg`, light up the row crossing the viewport centre as you scroll — the
-  // touch-friendly stand-in for :hover. A near-zero centre band means exactly one
-  // row qualifies at a time. Desktop keeps pure hover (observer never runs).
+  // On any device that can't hover (touch / coarse pointer, regardless of width),
+  // light up the row crossing the viewport centre as you scroll — the stand-in for
+  // :hover. The thin centre band means roughly one row qualifies at a time. We also
+  // keep this on narrow non-touch windows (≤1023px) so that layout is unchanged.
+  // Hover-capable wide screens keep pure :hover (the observer never runs).
   useEffect(() => {
     if (typeof IntersectionObserver === 'undefined' || !window.matchMedia) return
-    const mq = window.matchMedia('(max-width: 1023px)')
+    const mq = window.matchMedia('(hover: none), (max-width: 1023px)')
     let io: IntersectionObserver | null = null
     const setup = () => {
       io?.disconnect()
       io = null
       setActiveIndex(-1)
-      if (!mq.matches) return // desktop → hover handles it
+      if (!mq.matches) return // hover-capable wide screen → :hover handles it
       io = new IntersectionObserver(
         (entries) => {
           for (const e of entries) {

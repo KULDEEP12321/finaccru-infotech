@@ -4,12 +4,14 @@
   "version": "0.1.0",
   "type": "module",
   "engines": {
-    "node": "20.x"
+    "node": ">=22"
   },
   "scripts": {
     "dev": "vite",
     "build": "node --max-old-space-size=4096 ./node_modules/vite/bin/vite.js build",
     "preview": "vite preview",
+    "deploy": "npm run build && wrangler deploy",
+    "cf-typegen": "wrangler types",
     "blog:generate": "node scripts/generate-post.mjs"
   },
   "dependencies": {

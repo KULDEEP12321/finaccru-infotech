@@ -10,11 +10,14 @@ export const siteConfig = {
   defaultTitle: 'Finaccru Infotech — Custom Software, Cloud & AI Engineering',
   description:
     'Finaccru Infotech is a Dubai software company that designs, builds, and runs custom software, cloud & DevOps, mobile & web apps, data, AI & ML, and cybersecurity — plus penetration testing, managed IT, and dedicated developers to hire.',
-  // TEMPORARY: pointed at the live Vercel deployment so canonical + OG/share URLs
-  // resolve to the host that actually serves this site (and its /og images). Flip
-  // back to 'https://finaccruinfotech.com' once that domain is attached to this
-  // Vercel project — then everything resolves on the real canonical host.
-  url: 'https://finaccru-infotech.vercel.app',
+  // Canonical production host. Every canonical tag, OG/share URL, sitemap <loc>,
+  // robots Sitemap line, and JSON-LD @id reads from here, so flipping the brand
+  // domain is a one-line change. Attach this domain to the Cloudflare Worker
+  // deployment (custom domain / route) so these URLs resolve on the live host.
+  url: 'https://finaccruinfotech.com',
+  // Bare host (no scheme) — used for SMTP EHLO and anywhere a hostname (not a
+  // full URL) is required. Kept in lock-step with `url` above.
+  domain: 'finaccruinfotech.com',
   locale: 'en_US',
   themeColor: '#FFFAF0', // cream canvas — matches the Clay top-nav (design2.md)
   // Branded 1200x630 share card served from /public.
@@ -25,6 +28,8 @@ export const siteConfig = {
   twitterHandle: '',
   email: 'hello@finaccru.com',
   phone: '+971 4 000 0000',
+  // Geographic service scope advertised in the `Service` JSON-LD (schema.org).
+  areaServed: 'Worldwide',
   // Same-as profiles strengthen the Organization knowledge-graph entry. Add real
   // profile URLs as they go live; empty entries are filtered out before render.
   sameAs: [] as string[],

@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import LegalPage from '@/components/pages/Legal'
 import { siteContent } from '@/lib/site-content'
 const { legal } = siteContent
-import { pageTitle } from '@/lib/site-config'
+import { pageTitle, siteConfig } from '@/lib/site-config'
 import { seo, webPageSchema, breadcrumbSchema } from '@/lib/seo'
 
 const doc = legal.cookies
@@ -14,7 +14,7 @@ export const Route = createFileRoute('/cookies')({
       description: doc.summary,
       path: '/cookies',
       image: '/og/cookies.png',
-      keywords: 'Finaccru Infotech cookie policy, cookies, tracking technologies',
+      keywords: `${siteConfig.name} cookie policy, cookies, tracking technologies`,
     }),
     scripts: [
       webPageSchema({

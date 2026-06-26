@@ -5,6 +5,7 @@ import { Reveal } from '@/components/ui/Reveal'
 import SubserviceList from '@/components/layout/SubserviceList'
 import { siteContent } from '@/lib/site-content'
 const { serviceCategories } = siteContent
+import { siteConfig } from '@/lib/site-config'
 import NotFound from '@/components/pages/NotFound'
 
 export default function ServiceCategory({ slug }: { slug: string }) {
@@ -39,7 +40,7 @@ export default function ServiceCategory({ slug }: { slug: string }) {
         <Container className="py-20 sm:py-section">
           <Reveal className="mb-10 max-w-2xl">
             <Eyebrow onDark className="mb-3">
-              Why Finaccru
+              Why {siteConfig.shortName}
             </Eyebrow>
             <h2 className="display-caps text-[34px] sm:text-[40px]">{cat.benefitsTitle}</h2>
           </Reveal>

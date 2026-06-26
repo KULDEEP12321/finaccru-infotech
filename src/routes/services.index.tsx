@@ -2,11 +2,11 @@ import { createFileRoute } from '@tanstack/react-router'
 import Services from '@/components/pages/Services'
 import { siteContent } from '@/lib/site-content'
 const { serviceCategories } = siteContent
-import { pageTitle } from '@/lib/site-config'
+import { pageTitle, siteConfig } from '@/lib/site-config'
 import { seo, collectionSchema, breadcrumbSchema } from '@/lib/seo'
 
 const description =
-  'Explore Finaccru Infotech services: AI & ML development, custom software, mobile apps, cloud & DevOps, cybersecurity, and managed IT — engineered end-to-end.'
+  `Explore ${siteConfig.name} services: AI & ML development, custom software, mobile apps, cloud & DevOps, cybersecurity, and managed IT — engineered end-to-end.`
 
 export const Route = createFileRoute('/services/')({
   head: () => ({
@@ -20,7 +20,7 @@ export const Route = createFileRoute('/services/')({
     }),
     scripts: [
       collectionSchema({
-        name: 'Finaccru Infotech Services',
+        name: `${siteConfig.name} Services`,
         description,
         path: '/services',
         items: serviceCategories.map((c) => ({

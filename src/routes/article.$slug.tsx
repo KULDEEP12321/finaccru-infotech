@@ -7,7 +7,7 @@ import {
   getAllTags,
   getRelatedPosts,
 } from '@/lib/sanity.data'
-import { pageTitle } from '@/lib/site-config'
+import { pageTitle, siteConfig } from '@/lib/site-config'
 import { seo, articleSchema, breadcrumbSchema } from '@/lib/seo'
 
 export const Route = createFileRoute('/article/$slug')({
@@ -39,8 +39,8 @@ export const Route = createFileRoute('/article/$slug')({
     if (!article) return {}
 
     const path = `/article/${article.slug}`
-    const description = article.description || 'Insights from the Finaccru Infotech team.'
-    const authorName = article.author?.name || 'Finaccru Infotech'
+    const description = article.description || `Insights from the ${siteConfig.name} team.`
+    const authorName = article.author?.name || siteConfig.name
 
     return {
       ...seo({

@@ -26,6 +26,11 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    /* The scroll container (documentElement) is what framer-motion's useScroll
+       measures element-targeted scroll against (WorkGrid's parallax). It warns in
+       dev if that container is position:static, so we make it relative — purely a
+       positioning context, no offset, so layout/Lenis/sticky are unaffected. */
+    position: relative;
     /* Smooth scrolling is owned by Lenis (see src/App.jsx). A native
        `scroll-behavior: smooth` here races Lenis on programmatic scrolls
        (anchor jumps, route-change ScrollToTop) and forces sync style
@@ -86,15 +91,23 @@
   }
 }
 
-/* PrecisionSection wave — on narrow screens `background-size: cover` (set inline
-   for desktop) over-scales the 1280×714 wave to the full section height, so it
-   bleeds up through the timeline text. Below sm we anchor it as a bottom band
-   instead. `!important` is required to beat the inline declaration; the desktop
-   `cover` is left fully intact since this rule never applies at ≥640px. */
-@media (max-width: 639.98px) {
+/* PrecisionSection wave — below lg the desktop staircase is replaced by the
+   vertical timeline, and `background-size: cover` (set inline for desktop)
+   over-scales the 1280×714 wave to the full section height so it bleeds up
+   through the timeline text (most visibly: the wave swallowing "go-live"). Across
+   the whole timeline range we anchor the wave as a bottom band and reserve bottom
+   padding (≈ the wave's visible height, which scales with width) so the last items
+   always clear it. `!important` beats the inline declarations; desktop ≥1024 keeps
+   `cover` untouched since this rule never applies there. */
+@media (max-width: 1023.98px) {
   .precision-section {
-    background-size: 150% auto !important;
+    /* full-width so the WHOLE ascending wave reads as an intentional footer flourish
+       (the desktop `cover` / our old 150% zoom cropped it to an arbitrary slice). */
+    background-size: 100% auto !important;
     background-position: center bottom !important;
+    /* reserve a band (≈ the wave's visible height, which scales with width) so the
+       last timeline items always clear it. */
+    padding-bottom: clamp(96px, 23vw, 200px) !important;
   }
 }
 

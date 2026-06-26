@@ -2,11 +2,11 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useEffect } from 'react'
 import BlogList from '@/components/blog/BlogList'
 import { getArticles, getCategories } from '@/lib/sanity.data'
-import { pageTitle } from '@/lib/site-config'
+import { pageTitle, siteConfig } from '@/lib/site-config'
 import { seo, blogSchema, breadcrumbSchema } from '@/lib/seo'
 
 const description =
-  'Engineering notes, product thinking, and field reports from the Finaccru Infotech team on building custom software, cloud platforms, and intelligent systems.'
+  `Engineering notes, product thinking, and field reports from the ${siteConfig.name} team on building custom software, cloud platforms, and intelligent systems.`
 
 const parsePositivePage = (value: unknown) => {
   const page =
@@ -54,11 +54,11 @@ export const Route = createFileRoute('/blog')({
       path: '/blog',
       image: '/og/blog.png',
       keywords:
-        'software engineering blog, custom software insights, cloud engineering, AI ML, Finaccru Infotech',
+        `software engineering blog, custom software insights, cloud engineering, AI ML, ${siteConfig.name}`,
     }),
     scripts: [
       blogSchema({
-        name: 'Finaccru Infotech Blog',
+        name: `${siteConfig.name} Blog`,
         description,
         path: '/blog',
       }),

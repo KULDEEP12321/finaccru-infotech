@@ -1,3 +1,5 @@
+import { siteConfig } from '@/lib/site-config'
+
 // PrecisionSection — a "structured delivery" staircase.
 // Style follows the provided EternaCloud/NexaCore spec (gradient lines, glass
 // chips, badge, vw-based staircase); content is blended from protechplanner.com's
@@ -41,6 +43,84 @@ const BADGE_SVG = (
     </defs>
   </svg>
 )
+
+// One vertical timeline column — a continuous gradient spine with a node per stage,
+// the stage chip, and its items. Rendered full-width on phones (all four stages) and
+// split into two side-by-side columns on tablet so the stages fill the width.
+function TimelineColumn({ pillars }: { pillars: Array<(typeof PILLARS)[number]> }) {
+  return (
+    <div style={{ position: 'relative', textAlign: 'left' }}>
+      {/* the continuous spine — same gradient that flows down each desktop pillar */}
+      <div
+        aria-hidden="true"
+        style={{
+          position: 'absolute',
+          left: '13px',
+          top: '18px',
+          bottom: '18px',
+          width: '2px',
+          borderRadius: '1px',
+          backgroundImage: LINE_GRADIENT,
+        }}
+      />
+      {pillars.map((pillar, index) => (
+        <div
+          key={pillar.label}
+          style={{
+            position: 'relative',
+            paddingLeft: '42px',
+            paddingBottom: index === pillars.length - 1 ? 0 : '26px',
+          }}
+        >
+          {/* node sitting on the spine, ringed in white so the line reads as
+              passing behind it; vertically centred to the chip */}
+          <div
+            aria-hidden="true"
+            style={{
+              position: 'absolute',
+              left: '6px',
+              top: '11px',
+              width: '16px',
+              height: '16px',
+              borderRadius: '50%',
+              backgroundColor: '#ffffff',
+              border: '2px solid #ff4d8b',
+              boxShadow: '0 0 0 4px #ffffff',
+            }}
+          />
+
+          {/* Chip */}
+          <div
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              backgroundColor: '#ffffff',
+              border: '1px solid #e0e0e0',
+              fontSize: '15px',
+              fontWeight: 500,
+              borderRadius: '20px',
+              padding: '8px 16px',
+              whiteSpace: 'nowrap',
+              gap: '7px',
+            }}
+          >
+            <img src={LOGO_ICON} alt="" style={{ width: 16, height: 'auto' }} />
+            {pillar.label}
+          </div>
+
+          {/* Items */}
+          <div style={{ display: 'flex', flexDirection: 'column', paddingTop: '6px' }}>
+            {pillar.items.map((item) => (
+              <div key={item} style={{ fontSize: '14px', color: '#7a7a7a', padding: '6px 0' }}>
+                {item}
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
 
 export default function PrecisionSection() {
   return (
@@ -115,7 +195,7 @@ export default function PrecisionSection() {
           </h2>
 
           <p style={{ fontSize: 'clamp(15px, 1.2vw, 20px)', color: '#7a7a7a', margin: 0 }}>
-            Finaccru teams discover, match, validate and launch exactly the talent and systems that
+            {siteConfig.shortName} teams discover, match, validate and launch exactly the talent and systems that
             keep your programs on track.
           </p>
         </div>
@@ -213,79 +293,18 @@ export default function PrecisionSection() {
           ))}
         </div>
 
-        {/* Vertical timeline — one continuous gradient spine connects the four stages
-            top→bottom, each a node on the line with its items beside it. Used below lg
-            (where the vw staircase is too cramped); the staircase above (hidden lg:block)
-            is untouched, so desktop stays byte-identical. */}
-        <div className="lg:hidden" style={{ position: 'relative', width: '100%', textAlign: 'left' }}>
-          {/* the continuous spine — same gradient that flows down each desktop pillar */}
-          <div
-            aria-hidden="true"
-            style={{
-              position: 'absolute',
-              left: '13px',
-              top: '18px',
-              bottom: '18px',
-              width: '2px',
-              borderRadius: '1px',
-              backgroundImage: LINE_GRADIENT,
-            }}
-          />
-          {PILLARS.map((pillar, index) => (
-            <div
-              key={pillar.label}
-              style={{
-                position: 'relative',
-                paddingLeft: '42px',
-                paddingBottom: index === PILLARS.length - 1 ? 0 : '26px',
-              }}
-            >
-              {/* node sitting on the spine, ringed in white so the line reads as
-                  passing behind it; vertically centred to the chip */}
-              <div
-                aria-hidden="true"
-                style={{
-                  position: 'absolute',
-                  left: '6px',
-                  top: '11px',
-                  width: '16px',
-                  height: '16px',
-                  borderRadius: '50%',
-                  backgroundColor: '#ffffff',
-                  border: '2px solid #ff4d8b',
-                  boxShadow: '0 0 0 4px #ffffff',
-                }}
-              />
+        {/* Phone (<sm) — one continuous vertical timeline through all four stages. */}
+        <div className="sm:hidden">
+          <TimelineColumn pillars={PILLARS} />
+        </div>
 
-              {/* Chip */}
-              <div
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  backgroundColor: '#ffffff',
-                  border: '1px solid #e0e0e0',
-                  fontSize: '15px',
-                  fontWeight: 500,
-                  borderRadius: '20px',
-                  padding: '8px 16px',
-                  whiteSpace: 'nowrap',
-                  gap: '7px',
-                }}
-              >
-                <img src={LOGO_ICON} alt="" style={{ width: 16, height: 'auto' }} />
-                {pillar.label}
-              </div>
-
-              {/* Items */}
-              <div style={{ display: 'flex', flexDirection: 'column', paddingTop: '6px' }}>
-                {pillar.items.map((item) => (
-                  <div key={item} style={{ fontSize: '14px', color: '#7a7a7a', padding: '6px 0' }}>
-                    {item}
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
+        {/* Tablet (sm–lg) — two columns so the four stages fill the width instead of
+            stranding the right half as one narrow left-hugging column. Centred and
+            width-capped so it reads as an intentional pair. Phones use the single
+            column above and desktop ≥lg uses the staircase — both untouched. */}
+        <div className="hidden sm:grid sm:grid-cols-2 sm:gap-x-10 sm:max-w-[560px] sm:mx-auto lg:hidden">
+          <TimelineColumn pillars={PILLARS.slice(0, 2)} />
+          <TimelineColumn pillars={PILLARS.slice(2)} />
         </div>
       </div>
     </section>
